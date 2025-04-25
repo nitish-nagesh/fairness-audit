@@ -1,5 +1,5 @@
 # 📄 app_lite.py
-# Streamlit Lite Version - No R/Rpy2, Only Agent Explanation
+# Streamlit Lite Version - No R/Rpy2, Only Agent Explanation + Plotting
 
 import streamlit as st
 import pyreadr
@@ -7,14 +7,15 @@ import tempfile
 import openai
 import os
 from dotenv import load_dotenv
+import matplotlib.pyplot as plt
+import pandas as pd
+import re
 
 # Load environment variables (in local testing)
 load_dotenv()
 
 # OpenAI API key setup
 openai.api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
-
-
 
 def explain_with_agent(text):
     from openai import OpenAI
@@ -55,6 +56,22 @@ if uploaded_file is not None:
             st.session_state["audit_result"] = audit_result
             st.text("Fairness Decomposition Result:")
             st.code(audit_result, language="text")
+
+            # 📊 Parse and plot the audit result
+            pattern = r"(\w+): ([\-\d.]+) \(±([\d.]+)\)"
+            matches = re.findall(pattern, audit_result)
+            if matches:
+                plot_df = pd.DataFrame(matches, columns=["measure", "value", "sd"])
+                plot_df["value"] = plot_df["value"].astype(float)
+                plot_df["sd"] = plot_df["sd"].astype(float)
+
+                fig, ax = plt.subplots()
+                colors = ["salmon", "olive", "skyblue", "orchid", "lightgrey"]
+                ax.bar(plot_df["measure"], plot_df["value"], yerr=plot_df["sd"], capsize=8, color=colors[:len(plot_df)])
+                ax.axhline(0, color='black', linewidth=0.8)
+                ax.set_ylabel("Value")
+                ax.set_title("Y disparity decomposition COMPAS")
+                st.pyplot(fig)
 
     if st.button("Ask Agent to Explain"):
         if "audit_result" in st.session_state:
