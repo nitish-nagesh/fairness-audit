@@ -1,5 +1,4 @@
 streamlit
 pyreadr
 openai
-rpy2
 python-dotenv
