@@ -8,8 +8,6 @@ import openai
 import os
 from dotenv import load_dotenv
 
-from openai import OpenAI
-
 # Load environment variables (in local testing)
 load_dotenv()
 
@@ -19,7 +17,8 @@ openai.api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets 
 
 
 def explain_with_agent(text):
-    client = OpenAI()
+    from openai import OpenAI
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
