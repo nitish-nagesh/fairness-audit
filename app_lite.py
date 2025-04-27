@@ -91,29 +91,32 @@ if st.button("Run Prediction and Show Fairness Plot"):
     
 import base64
 
-random_forest_prompt = """
-You are analyzing a fairness decomposition plot from a machine learning study.
+random_forest_prompt = prompt = """
+You are analyzing a fairness decomposition plot produced after applying a Random Forest classifier on the COMPAS dataset.
 
-This plot shows two bars for each fairness component:
-- **Original** outcome disparities (red bars)
-- **Predicted** outcome disparities after applying a Random Forest model (light red/pink bars)
+The plot shows two bars for each fairness component:
+- Original outcome disparities (red bars)
+- Predicted outcome disparities after Random Forest (light red/pink bars)
 
-The x-axis shows the following components:
+The x-axis has the components:
 - Total Variation (tv)
 - Conditional Treatment-Free Direct Effect (ctfde)
 - Conditional Treatment-Free Indirect Effect (ctfie)
 - Conditional Total Sequential Effect (ctfse)
 - Effect of Treatment on Base Inputs (ett)
 
-The y-axis shows the magnitude of bias, positive or negative, with error bars.
+Important context:
+- Reducing TV alone does **not** guarantee fairness.
+- True fairness requires reducing **direct**, **indirect**, and **spurious** effects as well.
+- Even if TV becomes small, nonzero ctfde, ctfie, or ctfse mean unfairness remains.
 
 Please explain:
-- What each component (tv, ctfde, ctfie, etc.) represents
-- How the bias has changed between Original and Predicted (has Random Forest reduced or worsened bias?)
-- Which biases are most affected by the Random Forest predictions
-- Overall, does the Random Forest model seem to mitigate or amplify fairness issues compared to the original data?
+- Whether Random Forest reduced biases (tv, ctfde, ctfie, ctfse, ett)
+- Which components still show unfairness after prediction
+- If Random Forest mitigated or worsened any specific bias components
+- What would still need to be addressed to achieve full fairness
 
-Focus on comparing the **Original vs Predicted** results and give a fairness-aware interpretation.
+Explain it clearly as if teaching someone familiar with fairness concepts but new to causal decomposition.
 """
 
 if st.button("Ask GPT-4o to Explain Prediction Plot"):
