@@ -89,16 +89,18 @@ if st.button("Run Prediction and Show Fairness Plot"):
     st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
     st.image("fig_compas_yhat_rf.png", use_container_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
     
+import base64
+
 if st.button("Ask GPT-4o to Explain Prediction Plot"):
     with st.spinner("Calling GPT-4o Vision..."):
         from openai import OpenAI
         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-        # Read image file and encode it as base64
+        # Read image file and encode as base64
         with open("fig_compas_yhat_rf.png", "rb") as image_file:
-            encoded_image = base64.b64encode(image_file.read()).decode()
+            image_base64 = base64.b64encode(image_file.read()).decode()
 
-        # Call GPT-4o with image
+        # Call GPT-4o with proper format
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -106,8 +108,11 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Please explain this fairness decomposition plot clearly. Focus on treatment effects and bias components."},
-                        {"type": "image", "image": {"base64": encoded_image}}
+                        {"type": "text", "text": "Explain this fairness decomposition plot clearly. Focus on treatment effects and bias components."},
+                        {"type": "image", "image": {
+                            "base64": image_base64,
+                            "media_type": "image/png"   # <- ADD THIS LINE
+                        }}
                     ]
                 }
             ]
