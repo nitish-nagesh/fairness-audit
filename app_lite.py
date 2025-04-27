@@ -222,8 +222,8 @@ if st.button("Critique Audit Explanation", key="critique_audit"):
             
             st.markdown("### Critique of Audit Explanation")
             st.markdown(critique_text)
-    else:
-        st.warning("⚠️ Please first ask agent to explain audit result.")
+    # else:
+    #     st.warning("⚠️ Please first ask agent to explain audit result.")
 
 if st.button("Critique Prediction Plot Explanation", key="critique_prediction"):
     if "current_prediction_explanation" in st.session_state:
@@ -242,5 +242,5 @@ if st.button("Critique Prediction Plot Explanation", key="critique_prediction"):
             
             st.markdown("### Critique of Prediction Plot Explanation")
             st.markdown(critique_text)
-    else:
-        st.warning("⚠️ Please first ask agent to explain prediction plot.")
+    # else:
+    #     st.warning("⚠️ Please first ask agent to explain prediction plot.")
