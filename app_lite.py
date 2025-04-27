@@ -238,7 +238,7 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
         )
 
         plot_explanation = response.choices[0].message.content
-        st.session_state["plot_explanation"] = plot_explanation  # <-- SAVE plot explanation
+        st.session_state["current_prediction_explanation"] = plot_explanation 
         st.markdown("### GPT-4o Explanation for Prediction Plot")
         st.markdown(plot_explanation)
 else:
