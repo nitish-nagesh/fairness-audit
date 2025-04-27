@@ -191,28 +191,6 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
 
 st.markdown("---")
 
-# Critique Audit Explanation
-if st.button("Critique Agent Explanation (Audit Results)"):
-    if "audit_explanation" in st.session_state:
-        with st.spinner("Critiquing agent explanation..."):
-            audit_critique = critique_explanation(st.session_state["audit_explanation"])
-            st.markdown("### Critique of Agent's Audit Explanation")
-            st.markdown(audit_critique)
-    else:
-        st.warning("⚠️ Please run the fairness audit and ask agent to explain first.")
-
-# Critique Prediction Plot Explanation
-if st.button("Critique Agent Explanation (Prediction Plot)"):
-    if "plot_explanation" in st.session_state:
-        with st.spinner("Critiquing prediction plot explanation..."):
-            plot_critique = critique_explanation(st.session_state["plot_explanation"])
-            st.markdown("### Critique of Agent's Prediction Plot Explanation")
-            st.markdown(plot_critique)
-    else:
-        st.warning("⚠️ Please run the prediction plot and ask GPT-4o to explain first.")
-
-st.markdown("---")
-
 # Only show critique options if some explanations exist
 if "audit_explanation" in st.session_state or "plot_explanation" in st.session_state:
     st.header("🔍 Critique Agent Explanations")
