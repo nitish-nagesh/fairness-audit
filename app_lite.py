@@ -320,3 +320,27 @@ if st.session_state["results"]:
     )
 else:
     st.info("No critiques yet. Please run audit or prediction explanations first.")
+
+
+st.markdown("---")
+st.header("📝 Optional Researcher Annotations")
+
+if st.session_state["results"]:
+    df = pd.DataFrame(st.session_state["results"])
+    for idx, row in df.iterrows():
+        with st.expander(f"{row['Type']} Explanation {idx+1}"):
+            # Existing explanation
+            st.write("**Explanation:**")
+            st.markdown(row["Explanation"])
+            st.write("**Critique:**")
+            st.markdown(row["Critique"])
+
+            # Researcher annotations
+            confirm = st.radio(f"Is this critique fair? (Entry {idx+1})", ["✅ Yes", "❌ No"], key=f"confirm_{idx}")
+            notes = st.text_area(f"Additional notes for Entry {idx+1}", key=f"notes_{idx}")
+
+            # Save researcher annotations back
+            st.session_state["results"][idx]["Researcher_Confirmed"] = confirm
+            st.session_state["results"][idx]["Researcher_Notes"] = notes
+else:
+    st.info("ℹ️ No critiques to annotate yet.")
