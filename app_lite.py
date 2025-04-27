@@ -100,7 +100,10 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
         with open("fig_compas_yhat_rf.png", "rb") as image_file:
             image_base64 = base64.b64encode(image_file.read()).decode()
 
-        # Call GPT-4o with proper format
+        # Create the correct format: data URL
+        data_url = f"data:image/png;base64,{image_base64}"
+
+        # Call GPT-4o with proper image_url format
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -109,10 +112,7 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
                     "role": "user",
                     "content": [
                         {"type": "text", "text": "Explain this fairness decomposition plot clearly. Focus on treatment effects and bias components."},
-                        {"type": "image", "image": {
-                            "base64": image_base64,
-                            "media_type": "image/png"   # <- ADD THIS LINE
-                        }}
+                        {"type": "image_url", "image_url": {"url": data_url}}
                     ]
                 }
             ]
