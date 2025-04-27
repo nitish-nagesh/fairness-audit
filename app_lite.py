@@ -15,6 +15,8 @@ load_dotenv()
 # OpenAI API key setup
 openai.api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
 
+
+
 def explain_with_agent(text):
     from openai import OpenAI
     client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -87,6 +89,11 @@ ctfse: 0.0343 (±0.0111)
 ett: -0.0521 (±0.0119)
 '''
 
+# --- Initialize Session State ---
+if "results" not in st.session_state:
+    st.session_state["results"] = []
+    
+
 if st.button("Run Fairness Audit (Simulated)"):
     with st.spinner("Parsing fairness audit results..."):
         st.text("Fairness Decomposition Result:")
@@ -111,15 +118,15 @@ if st.button("Run Fairness Audit (Simulated)"):
     # Save audit result for agent
     st.session_state["audit_result"] = audit_result
 
-if st.button("Ask Agent to Explain"):
-    if "audit_result" in st.session_state:
-        with st.spinner("Calling GPT Agent..."):
-            explanation = explain_with_agent(st.session_state["audit_result"])
-            st.session_state["audit_explanation"] = explanation  # <-- SAVE explanation
-            st.markdown("### Agent Explanation")
-            st.markdown(explanation)
-    else:
-        st.warning("⚠️ Please run the fairness audit first.")
+
+if st.button("Ask Agent to Explain Audit Result", key="explain_audit"):
+    with st.spinner("Calling GPT-4..."):
+        explanation = explain_with_agent(audit_result)
+        st.session_state["current_audit_explanation"] = explanation
+        st.markdown("### Audit Explanation")
+        st.markdown(explanation)
+else:
+    st.warning("⚠️ Please run the fairness audit first.")
 
 
 
@@ -189,26 +196,45 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
         st.markdown("### GPT-4o Explanation for Prediction Plot")
         st.markdown(plot_explanation)
 
-st.markdown("---")
+# st.markdown("---")
 
-# Only show critique options if some explanations exist
-if "audit_explanation" in st.session_state or "plot_explanation" in st.session_state:
-    st.header("🔍 Critique Agent Explanations")
 
-    if st.button("Critique Agent Explanation (Audit Results)"):
-        if "audit_explanation" in st.session_state:
-            with st.spinner("Critiquing agent explanation..."):
-                audit_critique = critique_explanation(st.session_state["audit_explanation"])
-                st.markdown("### Critique of Agent's Audit Explanation")
-                st.markdown(audit_critique)
-        else:
-            st.warning("⚠️ Please run the fairness audit and ask agent to explain first.")
+if st.button("Critique Audit Explanation", key="critique_audit"):
+    if "current_audit_explanation" in st.session_state:
+        with st.spinner("Critiquing Audit Explanation..."):
+            critique_text, score_label = critique_explanation(st.session_state["current_audit_explanation"])
+            numeric_score = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score_label, -1)
+            
+            # Save the result
+            st.session_state["results"].append({
+                "Type": "Audit",
+                "Explanation": st.session_state["current_audit_explanation"],
+                "Critique": critique_text,
+                "Score": score_label,
+                "NumericScore": numeric_score
+            })
+            
+            st.markdown("### Critique of Audit Explanation")
+            st.markdown(critique_text)
+    else:
+        st.warning("⚠️ Please first ask agent to explain audit result.")
 
-    if st.button("Critique Agent Explanation (Prediction Plot)"):
-        if "plot_explanation" in st.session_state:
-            with st.spinner("Critiquing prediction plot explanation..."):
-                plot_critique = critique_explanation(st.session_state["plot_explanation"])
-                st.markdown("### Critique of Agent's Prediction Plot Explanation")
-                st.markdown(plot_critique)
-        else:
-            st.warning("⚠️ Please run the prediction plot and ask GPT-4o to explain first.")
+if st.button("Critique Prediction Plot Explanation", key="critique_prediction"):
+    if "current_prediction_explanation" in st.session_state:
+        with st.spinner("Critiquing Prediction Plot Explanation..."):
+            critique_text, score_label = critique_explanation(st.session_state["current_prediction_explanation"])
+            numeric_score = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score_label, -1)
+            
+            # Save the result
+            st.session_state["results"].append({
+                "Type": "Prediction",
+                "Explanation": st.session_state["current_prediction_explanation"],
+                "Critique": critique_text,
+                "Score": score_label,
+                "NumericScore": numeric_score
+            })
+            
+            st.markdown("### Critique of Prediction Plot Explanation")
+            st.markdown(critique_text)
+    else:
+        st.warning("⚠️ Please first ask agent to explain prediction plot.")
