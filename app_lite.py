@@ -244,9 +244,8 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
 else:
     st.warning("⚠️ Please run the prediction plot explanation first.")
 
-# st.markdown("---")
-
-
+st.markdown("---")
+st.header("Validation")
 
 if st.button("Critique Audit Explanation", key="critique_audit"):
     if "current_audit_explanation" in st.session_state:
@@ -287,3 +286,37 @@ if st.button("Critique Prediction Plot Explanation", key="critique_prediction"):
             st.markdown(critique_text)
     else:
         st.warning("⚠️ Please first ask agent to explain prediction plot.")
+
+
+# --- Scoring Table and Leaderboard ---
+st.markdown("---")
+st.header("Scoring Summary")
+
+if st.session_state["results"]:
+    df = pd.DataFrame(st.session_state["results"])
+
+    # Display the full table
+    st.subheader("Full Results Table")
+    st.dataframe(df[["Type", "Score", "NumericScore"]])
+
+    # Leaderboard Summary
+    st.subheader("Leaderboard Summary")
+    score_summary = df.groupby("Type").agg(
+        Avg_Score=("NumericScore", "mean"),
+        Count=("NumericScore", "count"),
+        Excellent_Count=("Score", lambda x: (x == "Excellent").sum()),
+        Good_Count=("Score", lambda x: (x == "Good").sum()),
+        Poor_Count=("Score", lambda x: (x == "Poor").sum())
+    ).reset_index()
+
+    st.dataframe(score_summary)
+
+    # Download button
+    st.download_button(
+        label="📥 Download Full Results as CSV",
+        data=df.to_csv(index=False),
+        file_name="fairness_audit_results.csv",
+        mime="text/csv",
+    )
+else:
+    st.info("No critiques yet. Please run audit or prediction explanations first.")
