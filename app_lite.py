@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 import pandas as pd
 import re
+import base64
 
 # Load environment variables (in local testing)
 load_dotenv()
@@ -88,36 +89,31 @@ if st.button("Run Prediction and Show Fairness Plot"):
     st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
     st.image("fig_compas_yhat_rf.png", use_container_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
     
-
-if st.button("Ask Agent to Explain Prediction Plot"):
-    with st.spinner("Calling GPT Agent..."):
-        plot_explanation_prompt = """
-You are an expert in fairness-aware machine learning.
-
-Given the following plot showing a fairness decomposition (Random Forest predictions on the COMPAS dataset):
-
-- The x-axis shows different components: ctfde, ctfie, ctfse, ett, tv.
-- The y-axis shows the magnitude of each component (positive or negative).
-- Bars are color-coded and include error bars (± standard deviations).
-
-Explain in plain, simple English:
-- What each component represents
-- Which biases are large or small
-- Whether the model prediction is fair or biased
-- Any important insights about the fairness decomposition
-"""
-
+if st.button("Ask GPT-4o to Explain Prediction Plot"):
+    with st.spinner("Calling GPT-4o Vision..."):
         from openai import OpenAI
         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+        # Read image file and encode it as base64
+        with open("fig_compas_yhat_rf.png", "rb") as image_file:
+            encoded_image = base64.b64encode(image_file.read()).decode()
+
+        # Call GPT-4o with image
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a fairness-aware AI assistant who explains fairness decomposition plots."},
-                {"role": "user", "content": plot_explanation_prompt}
+                {"role": "system", "content": "You are a fairness-aware AI assistant who explains fairness decomposition plots for machine learning models."},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "Please explain this fairness decomposition plot clearly. Focus on treatment effects and bias components."},
+                        {"type": "image", "image": {"base64": encoded_image}}
+                    ]
+                }
             ]
         )
+
         plot_explanation = response.choices[0].message.content
 
-        st.markdown("### Agent Explanation for Prediction Fairness Plot")
+        st.markdown("### GPT-4o Explanation for Prediction Plot")
         st.markdown(plot_explanation)
