@@ -130,6 +130,8 @@ else:
 
 
 
+
+
 if st.button("Run Prediction and Show Fairness Plot"):
     st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
     st.image("fig_compas_yhat_rf.png", use_container_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
@@ -164,6 +166,8 @@ Please explain:
 Explain it clearly as if teaching someone familiar with fairness concepts but new to causal decomposition.
 """
 
+
+
 if st.button("Ask GPT-4o to Explain Prediction Plot"):
     with st.spinner("Calling GPT-4o Vision..."):
         from openai import OpenAI
@@ -195,6 +199,8 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
         st.session_state["plot_explanation"] = plot_explanation  # <-- SAVE plot explanation
         st.markdown("### GPT-4o Explanation for Prediction Plot")
         st.markdown(plot_explanation)
+else:
+    st.warning("⚠️ Please run the prediction plot explanation first.")
 
 # st.markdown("---")
 
