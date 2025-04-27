@@ -30,8 +30,10 @@ def explain_with_agent(text):
     return response.choices[0].message.content
 
 # --- Self-Critique Function ---
+
 def critique_explanation(explanation_text: str):
     from openai import OpenAI
+    import re
     client = OpenAI(api_key=openai.api_key)
 
     critique_prompt = f"""
@@ -42,16 +44,16 @@ Below is a model's fairness explanation:
 {explanation_text}
 ---
 
-Please evaluate it based on these dimensions:
-1. **Accuracy**: Are the fairness components described correctly?
-2. **Completeness**: Are all important components (tv, ctfde, ctfie, ctfse, ett) discussed?
-3. **Comparison**: Is Original vs Predicted discussed correctly?
-4. **Fairness Interpretation**: Are remaining biases identified correctly?
-5. **Clarity**: Is the explanation understandable?
+Please evaluate it based on:
+1. Accuracy
+2. Completeness
+3. Comparison
+4. Fairness Interpretation
+5. Clarity
 
-For each, grade (Excellent / Good / Poor) with 1-2 lines justification.
+For each: Excellent / Good / Poor with 1-2 lines justification.
 
-Finally, summarize: "Overall, this explanation is {{excellent / good / poor}} because ..."
+Finally, summarize: Overall, this explanation is Excellent / Good / Poor because...
 """
 
     response = client.chat.completions.create(
@@ -62,7 +64,47 @@ Finally, summarize: "Overall, this explanation is {{excellent / good / poor}} be
         ]
     )
 
-    return response.choices[0].message.content
+    critique_text = response.choices[0].message.content
+
+    # --- Extract Overall Rating ---
+    match = re.search(r"Overall.*?(Excellent|Good|Poor)", critique_text, re.IGNORECASE)
+    score_label = match.group(1).capitalize() if match else "Unknown"
+
+    return critique_text, score_label  # ✅ Return BOTH
+
+# def critique_explanation(explanation_text: str):
+#     from openai import OpenAI
+#     client = OpenAI(api_key=openai.api_key)
+
+#     critique_prompt = f"""
+# You are an expert fairness auditor.
+
+# Below is a model's fairness explanation:
+# ---
+# {explanation_text}
+# ---
+
+# Please evaluate it based on these dimensions:
+# 1. **Accuracy**: Are the fairness components described correctly?
+# 2. **Completeness**: Are all important components (tv, ctfde, ctfie, ctfse, ett) discussed?
+# 3. **Comparison**: Is Original vs Predicted discussed correctly?
+# 4. **Fairness Interpretation**: Are remaining biases identified correctly?
+# 5. **Clarity**: Is the explanation understandable?
+
+# For each, grade (Excellent / Good / Poor) with 1-2 lines justification.
+
+# Finally, summarize: "Overall, this explanation is {{excellent / good / poor}} because ..."
+# """
+
+#     response = client.chat.completions.create(
+#         model="gpt-4o",
+#         messages=[
+#             {"role": "system", "content": "You are a fairness reasoning expert."},
+#             {"role": "user", "content": critique_prompt}
+#         ]
+#     )
+
+#     return response.choices[0].message.content
 
 # --- UI ---
 st.title("Causal Fairness Audit (Lite Version)")
@@ -203,6 +245,7 @@ else:
     st.warning("⚠️ Please run the prediction plot explanation first.")
 
 # st.markdown("---")
+
 
 
 if st.button("Critique Audit Explanation", key="critique_audit"):
