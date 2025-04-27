@@ -27,6 +27,41 @@ def explain_with_agent(text):
     )
     return response.choices[0].message.content
 
+# --- Self-Critique Function ---
+def critique_explanation(explanation_text: str):
+    from openai import OpenAI
+    client = OpenAI(api_key=openai.api_key)
+
+    critique_prompt = f"""
+You are an expert fairness auditor.
+
+Below is a model's fairness explanation:
+---
+{explanation_text}
+---
+
+Please evaluate it based on these dimensions:
+1. **Accuracy**: Are the fairness components described correctly?
+2. **Completeness**: Are all important components (tv, ctfde, ctfie, ctfse, ett) discussed?
+3. **Comparison**: Is Original vs Predicted discussed correctly?
+4. **Fairness Interpretation**: Are remaining biases identified correctly?
+5. **Clarity**: Is the explanation understandable?
+
+For each, grade (Excellent / Good / Poor) with 1-2 lines justification.
+
+Finally, summarize: "Overall, this explanation is {excellent / good / poor} because ..."
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are a fairness reasoning expert."},
+            {"role": "user", "content": critique_prompt}
+        ]
+    )
+
+    return response.choices[0].message.content
+
 # --- UI ---
 st.title("Causal Fairness Audit (Lite Version)")
 
@@ -80,10 +115,13 @@ if st.button("Ask Agent to Explain"):
     if "audit_result" in st.session_state:
         with st.spinner("Calling GPT Agent..."):
             explanation = explain_with_agent(st.session_state["audit_result"])
+            st.session_state["audit_explanation"] = explanation  # <-- SAVE explanation
             st.markdown("### Agent Explanation")
             st.markdown(explanation)
     else:
         st.warning("⚠️ Please run the fairness audit first.")
+
+
 
 if st.button("Run Prediction and Show Fairness Plot"):
     st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
@@ -91,7 +129,7 @@ if st.button("Run Prediction and Show Fairness Plot"):
     
 import base64
 
-random_forest_prompt = prompt = """
+random_forest_prompt = """
 You are analyzing a fairness decomposition plot produced after applying a Random Forest classifier on the COMPAS dataset.
 
 The plot shows two bars for each fairness component:
@@ -147,6 +185,28 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
         )
 
         plot_explanation = response.choices[0].message.content
-
+        st.session_state["plot_explanation"] = plot_explanation  # <-- SAVE plot explanation
         st.markdown("### GPT-4o Explanation for Prediction Plot")
         st.markdown(plot_explanation)
+
+st.markdown("---")
+
+# Critique Audit Explanation
+if st.button("Critique Agent Explanation (Audit Results)"):
+    if "audit_explanation" in st.session_state:
+        with st.spinner("Critiquing agent explanation..."):
+            audit_critique = critique_explanation(st.session_state["audit_explanation"])
+            st.markdown("### Critique of Agent's Audit Explanation")
+            st.markdown(audit_critique)
+    else:
+        st.warning("⚠️ Please run the fairness audit and ask agent to explain first.")
+
+# Critique Prediction Plot Explanation
+if st.button("Critique Agent Explanation (Prediction Plot)"):
+    if "plot_explanation" in st.session_state:
+        with st.spinner("Critiquing prediction plot explanation..."):
+            plot_critique = critique_explanation(st.session_state["plot_explanation"])
+            st.markdown("### Critique of Agent's Prediction Plot Explanation")
+            st.markdown(plot_critique)
+    else:
+        st.warning("⚠️ Please run the prediction plot and ask GPT-4o to explain first.")
