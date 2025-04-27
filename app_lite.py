@@ -81,3 +81,6 @@ if uploaded_file is not None:
                 st.markdown(explanation)
         else:
             st.warning("⚠️ Please run the fairness audit first.")
+    # 📊 Always show the saved plot (from repo)
+    st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
+    st.image("fig_compas_yhat_rf.png", use_column_width=True)
