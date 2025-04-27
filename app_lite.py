@@ -84,6 +84,7 @@ if st.button("Ask Agent to Explain"):
     else:
         st.warning("⚠️ Please run the fairness audit first.")
 
-# 📊 Always show the saved plot from repo
-st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
-st.image("fig_compas_yhat_rf.png", use_column_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
+if st.button("Run Prediction and Show Fairness Plot"):
+    st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
+    st.image("fig_compas_yhat_rf.png", use_container_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
+    
