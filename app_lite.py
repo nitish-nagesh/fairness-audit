@@ -49,7 +49,7 @@ Please evaluate it based on these dimensions:
 
 For each, grade (Excellent / Good / Poor) with 1-2 lines justification.
 
-Finally, summarize: "Overall, this explanation is {excellent / good / poor} because ..."
+Finally, summarize: "Overall, this explanation is {{excellent / good / poor}} because ..."
 """
 
     response = client.chat.completions.create(
