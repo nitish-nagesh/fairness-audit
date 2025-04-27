@@ -88,3 +88,36 @@ if st.button("Run Prediction and Show Fairness Plot"):
     st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
     st.image("fig_compas_yhat_rf.png", use_container_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
     
+
+if st.button("Ask Agent to Explain Prediction Plot"):
+    with st.spinner("Calling GPT Agent..."):
+        plot_explanation_prompt = """
+You are an expert in fairness-aware machine learning.
+
+Given the following plot showing a fairness decomposition (Random Forest predictions on the COMPAS dataset):
+
+- The x-axis shows different components: ctfde, ctfie, ctfse, ett, tv.
+- The y-axis shows the magnitude of each component (positive or negative).
+- Bars are color-coded and include error bars (± standard deviations).
+
+Explain in plain, simple English:
+- What each component represents
+- Which biases are large or small
+- Whether the model prediction is fair or biased
+- Any important insights about the fairness decomposition
+"""
+
+        from openai import OpenAI
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a fairness-aware AI assistant who explains fairness decomposition plots."},
+                {"role": "user", "content": plot_explanation_prompt}
+            ]
+        )
+        plot_explanation = response.choices[0].message.content
+
+        st.markdown("### Agent Explanation for Prediction Fairness Plot")
+        st.markdown(plot_explanation)
