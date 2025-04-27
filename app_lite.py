@@ -91,6 +91,31 @@ if st.button("Run Prediction and Show Fairness Plot"):
     
 import base64
 
+random_forest_prompt = """
+You are analyzing a fairness decomposition plot from a machine learning study.
+
+This plot shows two bars for each fairness component:
+- **Original** outcome disparities (red bars)
+- **Predicted** outcome disparities after applying a Random Forest model (light red/pink bars)
+
+The x-axis shows the following components:
+- Total Variation (tv)
+- Conditional Treatment-Free Direct Effect (ctfde)
+- Conditional Treatment-Free Indirect Effect (ctfie)
+- Conditional Total Sequential Effect (ctfse)
+- Effect of Treatment on Base Inputs (ett)
+
+The y-axis shows the magnitude of bias, positive or negative, with error bars.
+
+Please explain:
+- What each component (tv, ctfde, ctfie, etc.) represents
+- How the bias has changed between Original and Predicted (has Random Forest reduced or worsened bias?)
+- Which biases are most affected by the Random Forest predictions
+- Overall, does the Random Forest model seem to mitigate or amplify fairness issues compared to the original data?
+
+Focus on comparing the **Original vs Predicted** results and give a fairness-aware interpretation.
+"""
+
 if st.button("Ask GPT-4o to Explain Prediction Plot"):
     with st.spinner("Calling GPT-4o Vision..."):
         from openai import OpenAI
@@ -111,7 +136,7 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "Explain this fairness decomposition plot clearly. Focus on treatment effects and bias components."},
+                        {"type": "text", "text": random_forest_prompt},
                         {"type": "image_url", "image_url": {"url": data_url}}
                     ]
                 }
