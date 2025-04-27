@@ -135,6 +135,8 @@ ett: -0.0521 (±0.0119)
 if "results" not in st.session_state:
     st.session_state["results"] = []
     
+st.markdown("---")
+st.header("Fairness Audit")
 
 if st.button("Run Fairness Audit (Simulated)"):
     with st.spinner("Parsing fairness audit results..."):
@@ -172,7 +174,8 @@ else:
 
 
 
-
+st.markdown("---")
+st.header("Fairness Prediction")
 
 if st.button("Run Prediction and Show Fairness Plot"):
     st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
@@ -323,7 +326,7 @@ else:
 
 
 st.markdown("---")
-st.header("📝 Optional Researcher Annotations")
+st.header("Researcher Annotations")
 
 if st.session_state["results"]:
     df = pd.DataFrame(st.session_state["results"])
@@ -344,3 +347,18 @@ if st.session_state["results"]:
             st.session_state["results"][idx]["Researcher_Notes"] = notes
 else:
     st.info("ℹ️ No critiques to annotate yet.")
+
+
+st.markdown("---")
+st.header("Researcher Annotation Summary")
+
+if st.session_state["results"]:
+    df = pd.DataFrame(st.session_state["results"])
+
+    if "Researcher_Confirmed" in df.columns:
+        # Only show if researcher annotations exist
+        st.dataframe(df[["Type", "Score", "Researcher_Confirmed", "Researcher_Notes"]])
+    else:
+        st.info("ℹ️ No researcher annotations yet.")
+else:
+    st.info("ℹ️ No results to display yet.")
