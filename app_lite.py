@@ -1,6 +1,3 @@
-# 📄 app_lite.py
-# Streamlit Lite Version - No R/Rpy2, Only Agent Explanation + Plotting
-
 import streamlit as st
 import pyreadr
 import tempfile
@@ -29,9 +26,11 @@ def explain_with_agent(text):
     )
     return response.choices[0].message.content
 
+# --- UI ---
 st.title("Causal Fairness Audit (Lite Version)")
 
-uploaded_file = st.file_uploader("Upload COMPAS .rda file", type="rda")
+# (Optional) Upload .rda file (even if not used in this version)
+uploaded_file = st.file_uploader("Upload COMPAS .rda file (Optional)", type="rda")
 
 if uploaded_file is not None:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".rda") as tmp_file:
@@ -43,44 +42,48 @@ if uploaded_file is not None:
     df = result[list(result.keys())[0]]
     st.dataframe(df.head())
 
-    if st.button("Run Fairness Audit"):
-        with st.spinner("Simulating fairness audit..."):
-            # 📄 Simulated Fairness Decomposition Result (Mock Data)
-            audit_result = '''
-            tv: -0.0864 (±0.0161)
-            ctfde: 0.0002 (±0.0128)
-            ctfie: 0.0522 (±0.0066)
-            ctfse: 0.0343 (±0.0111)
-            ett: -0.0521 (±0.0119)
-            '''
-            st.session_state["audit_result"] = audit_result
-            st.text("Fairness Decomposition Result:")
-            st.code(audit_result, language="text")
+# 📄 Hardcoded simulated audit results
+audit_result = '''
+tv: -0.0864 (±0.0161)
+ctfde: 0.0002 (±0.0128)
+ctfie: 0.0522 (±0.0066)
+ctfse: 0.0343 (±0.0111)
+ett: -0.0521 (±0.0119)
+'''
 
-            # 📊 Parse and plot the audit result
-            pattern = r"(\w+): ([\-\d.]+) \(±([\d.]+)\)"
-            matches = re.findall(pattern, audit_result)
-            if matches:
-                plot_df = pd.DataFrame(matches, columns=["measure", "value", "sd"])
-                plot_df["value"] = plot_df["value"].astype(float)
-                plot_df["sd"] = plot_df["sd"].astype(float)
+if st.button("Run Fairness Audit (Simulated)"):
+    with st.spinner("Parsing fairness audit results..."):
+        st.text("Fairness Decomposition Result:")
+        st.code(audit_result, language="text")
 
-                fig, ax = plt.subplots()
-                colors = ["salmon", "olive", "skyblue", "orchid", "lightgrey"]
-                ax.bar(plot_df["measure"], plot_df["value"], yerr=plot_df["sd"], capsize=8, color=colors[:len(plot_df)])
-                ax.axhline(0, color='black', linewidth=0.8)
-                ax.set_ylabel("Value")
-                ax.set_title("Y disparity decomposition COMPAS")
-                st.pyplot(fig)
+        # 📊 Parse and plot the audit result
+        pattern = r"(\w+): ([\-\d.]+) \(±([\d.]+)\)"
+        matches = re.findall(pattern, audit_result)
+        if matches:
+            plot_df = pd.DataFrame(matches, columns=["measure", "value", "sd"])
+            plot_df["value"] = plot_df["value"].astype(float)
+            plot_df["sd"] = plot_df["sd"].astype(float)
 
-    if st.button("Ask Agent to Explain"):
-        if "audit_result" in st.session_state:
-            with st.spinner("Calling GPT Agent..."):
-                explanation = explain_with_agent(st.session_state["audit_result"])
-                st.markdown("### Agent Explanation")
-                st.markdown(explanation)
-        else:
-            st.warning("⚠️ Please run the fairness audit first.")
-    # 📊 Always show the saved plot (from repo)
-    st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
-    st.image("fig_compas_yhat_rf.png", use_column_width=True)
+            fig, ax = plt.subplots()
+            colors = ["salmon", "olive", "skyblue", "orchid", "lightgrey"]
+            ax.bar(plot_df["measure"], plot_df["value"], yerr=plot_df["sd"], capsize=8, color=colors[:len(plot_df)])
+            ax.axhline(0, color='black', linewidth=0.8)
+            ax.set_ylabel("Value")
+            ax.set_title("Simulated Y disparity decomposition (Sample Audit)")
+            st.pyplot(fig)
+
+    # Save audit result for agent
+    st.session_state["audit_result"] = audit_result
+
+if st.button("Ask Agent to Explain"):
+    if "audit_result" in st.session_state:
+        with st.spinner("Calling GPT Agent..."):
+            explanation = explain_with_agent(st.session_state["audit_result"])
+            st.markdown("### Agent Explanation")
+            st.markdown(explanation)
+    else:
+        st.warning("⚠️ Please run the fairness audit first.")
+
+# 📊 Always show the saved plot from repo
+st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
+st.image("fig_compas_yhat_rf.png", use_column_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
