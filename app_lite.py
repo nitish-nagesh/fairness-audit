@@ -300,14 +300,14 @@ if st.session_state["show_compas"]:
 
     # --- GPT-4o Explanation ---
     st.markdown("### GPT-4o Explanation")
-    if st.button("Explain COMPAS Decomposition", key="explain_compas"):
+    if st.button("Explain COMPAS Outcome Control", key="explain_compas_oc"):
         from openai import OpenAI
         client = OpenAI(api_key=openai.api_key)
         summary = compas_df.groupby("outcome").apply(lambda g: "\n".join(
             f"{r['measure']}: {r['value']:.4f} (±{r['sd']:.4f})" for _, r in g.iterrows()
         )).to_string()
 
-        prompt = f"You are a fairness-aware AI assistant. Explain this causal decomposition across curr, opt, and cf:\n{summary}"
+        prompt = f"You are a fairness-aware AI assistant. Explain this causal outcome control decomposition across curr, opt, and cf:\n{summary}"
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -316,7 +316,11 @@ if st.session_state["show_compas"]:
             ]
         )
         st.markdown("### 🧠 GPT-4o Explanation")
-        st.write(response.choices[0].message.content)
+        outcome_explanation = response.choices[0].message.content
+        st.session_state["current_outcome_control_explanation"] = outcome_explanation
+        st.write(outcome_explanation)
+
+
 
 
 
