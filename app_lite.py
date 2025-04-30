@@ -247,6 +247,79 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
 else:
     st.warning("⚠️ Please run the prediction plot explanation first.")
 
+# --- COMPAS Outcome Control Results Section ---
+st.markdown("## Fairness Outcome Control")
+
+# Persistent button using session_state
+if "show_compas" not in st.session_state:
+    st.session_state["show_compas"] = False
+
+if st.button("Show COMPAS Outcome Control Results"):
+    st.session_state["show_compas"] = True
+
+if st.session_state["show_compas"]:
+    compas_data = [
+        ("tv",     -0.08145645, 0.02119236, "curr"),
+        ("ctfde",  -0.00001070, 0.00001710, "curr"),
+        ("ctfie",   0.06435775, 0.01069999, "curr"),
+        ("ctfse",   0.01708799, 0.01756654, "curr"),
+        ("tv",     -0.06107624, 0.02129655, "opt"),
+        ("ctfde",   0.01302999, 0.00544556, "opt"),
+        ("ctfie",   0.05407829, 0.00802868, "opt"),
+        ("ctfse",   0.02002794, 0.01955030, "opt"),
+        ("tv",     -0.12688254, 0.01914382, "cf"),
+        ("ctfde",   0.00065480, 0.00101500, "cf"),
+        ("ctfie",   0.07242122, 0.00874257, "cf"),
+        ("ctfse",   0.05511611, 0.01694466, "cf"),
+    ]
+
+    compas_df = pd.DataFrame(compas_data, columns=["measure", "value", "sd", "outcome"])
+    st.dataframe(compas_df)
+
+    # --- Decomposition Plot ---
+    st.markdown("### 📊 Outcome Control Plot")
+    fig, ax = plt.subplots()
+    colors = {"curr": "#e74c3c", "opt": "#3498db", "cf": "#2ecc71"}
+    measures = ["tv", "ctfde", "ctfie", "ctfse"]
+    bar_width = 0.25
+    positions = range(len(measures))
+
+    for i, policy in enumerate(compas_df["outcome"].unique()):
+        sub_df = compas_df[compas_df["outcome"] == policy].set_index("measure").loc[measures]
+        ax.bar([p + i * bar_width for p in positions], sub_df["value"],
+               yerr=1.96 * sub_df["sd"], label=policy.upper(),
+               width=bar_width, capsize=5, color=colors.get(policy, "gray"))
+
+    ax.set_xticks([p + bar_width for p in positions])
+    ax.set_xticklabels([m.upper() for m in measures])
+    ax.axhline(0, color='black', linewidth=0.8)
+    ax.set_ylabel("Benefit Fairness")
+    ax.set_title("COMPAS Decomposition by Policy")
+    ax.legend()
+    st.pyplot(fig)
+
+    # --- GPT-4o Explanation ---
+    st.markdown("### GPT-4o Explanation")
+    if st.button("Explain COMPAS Decomposition", key="explain_compas"):
+        from openai import OpenAI
+        client = OpenAI(api_key=openai.api_key)
+        summary = compas_df.groupby("outcome").apply(lambda g: "\n".join(
+            f"{r['measure']}: {r['value']:.4f} (±{r['sd']:.4f})" for _, r in g.iterrows()
+        )).to_string()
+
+        prompt = f"You are a fairness-aware AI assistant. Explain this causal decomposition across curr, opt, and cf:\n{summary}"
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You explain fairness results to researchers."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        st.markdown("### 🧠 GPT-4o Explanation")
+        st.write(response.choices[0].message.content)
+
+
+
 st.markdown("---")
 st.header("Validation")
 
@@ -290,78 +363,25 @@ if st.button("Critique Prediction Plot Explanation", key="critique_prediction"):
     else:
         st.warning("⚠️ Please first ask agent to explain prediction plot.")
 
-# --- COMPAS Decomposition Results Section ---
-st.markdown("## Fairness Decomposition")
 
-# Persistent button using session_state
-if "show_compas" not in st.session_state:
-    st.session_state["show_compas"] = False
+# --- Add critique logic for Outcome Control ---
+if st.button("Critique Outcome Control Explanation", key="critique_outcome_control"):
+    if "current_outcome_control_explanation" in st.session_state:
+        with st.spinner("Critiquing Outcome Control Explanation..."):
+            critique_text, score_label = critique_explanation(st.session_state["current_outcome_control_explanation"])
+            numeric_score = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score_label, -1)
+            st.session_state["results"].append({
+                "Type": "Outcome Control",
+                "Explanation": st.session_state["current_outcome_control_explanation"],
+                "Critique": critique_text,
+                "Score": score_label,
+                "NumericScore": numeric_score
+            })
+            st.markdown("### Critique of Outcome Control Explanation")
+            st.markdown(critique_text)
+    else:
+        st.warning("⚠️ Please first generate the Outcome Control explanation.")
 
-if st.button("Show COMPAS Decomposition Results"):
-    st.session_state["show_compas"] = True
-
-if st.session_state["show_compas"]:
-    compas_data = [
-        ("tv",     -0.08145645, 0.02119236, "curr"),
-        ("ctfde",  -0.00001070, 0.00001710, "curr"),
-        ("ctfie",   0.06435775, 0.01069999, "curr"),
-        ("ctfse",   0.01708799, 0.01756654, "curr"),
-        ("tv",     -0.06107624, 0.02129655, "opt"),
-        ("ctfde",   0.01302999, 0.00544556, "opt"),
-        ("ctfie",   0.05407829, 0.00802868, "opt"),
-        ("ctfse",   0.02002794, 0.01955030, "opt"),
-        ("tv",     -0.12688254, 0.01914382, "cf"),
-        ("ctfde",   0.00065480, 0.00101500, "cf"),
-        ("ctfie",   0.07242122, 0.00874257, "cf"),
-        ("ctfse",   0.05511611, 0.01694466, "cf"),
-    ]
-
-    compas_df = pd.DataFrame(compas_data, columns=["measure", "value", "sd", "outcome"])
-    st.dataframe(compas_df)
-
-    # --- Decomposition Plot ---
-    st.markdown("### 📊 Decomposition Plot")
-    fig, ax = plt.subplots()
-    colors = {"curr": "#e74c3c", "opt": "#3498db", "cf": "#2ecc71"}
-    measures = ["tv", "ctfde", "ctfie", "ctfse"]
-    bar_width = 0.25
-    positions = range(len(measures))
-
-    for i, policy in enumerate(compas_df["outcome"].unique()):
-        sub_df = compas_df[compas_df["outcome"] == policy].set_index("measure").loc[measures]
-        ax.bar([p + i * bar_width for p in positions], sub_df["value"],
-               yerr=1.96 * sub_df["sd"], label=policy.upper(),
-               width=bar_width, capsize=5, color=colors.get(policy, "gray"))
-
-    ax.set_xticks([p + bar_width for p in positions])
-    ax.set_xticklabels([m.upper() for m in measures])
-    ax.axhline(0, color='black', linewidth=0.8)
-    ax.set_ylabel("Fairness Component")
-    ax.set_title("COMPAS Decomposition by Policy")
-    ax.legend()
-    st.pyplot(fig)
-
-    # --- GPT-4o Explanation ---
-    st.markdown("### GPT-4o Explanation")
-    if st.button("Explain COMPAS Decomposition", key="explain_compas"):
-        from openai import OpenAI
-        client = OpenAI(api_key=openai.api_key)
-        summary = compas_df.groupby("outcome").apply(lambda g: "\n".join(
-            f"{r['measure']}: {r['value']:.4f} (±{r['sd']:.4f})" for _, r in g.iterrows()
-        )).to_string()
-
-        prompt = f"You are a fairness-aware AI assistant. Explain this causal decomposition across curr, opt, and cf:\n{summary}"
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You explain fairness results to researchers."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        st.markdown("### 🧠 GPT-4o Explanation")
-        st.write(response.choices[0].message.content)
-
-        
 # --- Scoring Table and Leaderboard ---
 st.markdown("---")
 
