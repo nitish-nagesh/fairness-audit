@@ -290,13 +290,17 @@ if st.button("Critique Prediction Plot Explanation", key="critique_prediction"):
     else:
         st.warning("⚠️ Please first ask agent to explain prediction plot.")
 
-# --- Scoring Table and Leaderboard ---
-st.markdown("---")
-
 # --- COMPAS Decomposition Results Section ---
 st.markdown("## Fairness Decomposition")
 
-if st.button("Show COMPAS Decomposition Results", key="show_compas"):
+# Persistent button using session_state
+if "show_compas" not in st.session_state:
+    st.session_state["show_compas"] = False
+
+if st.button("Show COMPAS Decomposition Results"):
+    st.session_state["show_compas"] = True
+
+if st.session_state["show_compas"]:
     compas_data = [
         ("tv",     -0.08145645, 0.02119236, "curr"),
         ("ctfde",  -0.00001070, 0.00001710, "curr"),
@@ -340,6 +344,7 @@ if st.button("Show COMPAS Decomposition Results", key="show_compas"):
     # --- GPT-4o Explanation ---
     st.markdown("### GPT-4o Explanation")
     if st.button("Explain COMPAS Decomposition", key="explain_compas"):
+        from openai import OpenAI
         client = OpenAI(api_key=openai.api_key)
         summary = compas_df.groupby("outcome").apply(lambda g: "\n".join(
             f"{r['measure']}: {r['value']:.4f} (±{r['sd']:.4f})" for _, r in g.iterrows()
@@ -356,6 +361,9 @@ if st.button("Show COMPAS Decomposition Results", key="show_compas"):
         st.markdown("### 🧠 GPT-4o Explanation")
         st.write(response.choices[0].message.content)
 
+        
+# --- Scoring Table and Leaderboard ---
+st.markdown("---")
 
 st.header("Scoring Summary")
 
