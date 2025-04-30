@@ -290,7 +290,6 @@ if st.button("Critique Prediction Plot Explanation", key="critique_prediction"):
     else:
         st.warning("⚠️ Please first ask agent to explain prediction plot.")
 
-
 # --- Scoring Table and Leaderboard ---
 st.markdown("---")
 
@@ -356,3 +355,74 @@ if st.button("Show COMPAS Decomposition Results", key="show_compas"):
         )
         st.markdown("### 🧠 GPT-4o Explanation")
         st.write(response.choices[0].message.content)
+
+
+st.header("Scoring Summary")
+
+if st.session_state["results"]:
+    df = pd.DataFrame(st.session_state["results"])
+
+    # Display the full table
+    st.subheader("Full Results Table")
+    st.dataframe(df[["Type", "Score", "NumericScore"]])
+
+    # Leaderboard Summary
+    st.subheader("Leaderboard Summary")
+    score_summary = df.groupby("Type").agg(
+        Avg_Score=("NumericScore", "mean"),
+        Count=("NumericScore", "count"),
+        Excellent_Count=("Score", lambda x: (x == "Excellent").sum()),
+        Good_Count=("Score", lambda x: (x == "Good").sum()),
+        Poor_Count=("Score", lambda x: (x == "Poor").sum())
+    ).reset_index()
+
+    st.dataframe(score_summary)
+
+    # Download button
+    st.download_button(
+        label="📥 Download Full Results as CSV",
+        data=df.to_csv(index=False),
+        file_name="fairness_audit_results.csv",
+        mime="text/csv",
+    )
+else:
+    st.info("ℹ️ No critiques yet. Please run audit or prediction explanations first.")
+
+
+st.markdown("---")
+st.header("Researcher Annotations")
+
+if st.session_state["results"]:
+    df = pd.DataFrame(st.session_state["results"])
+    for idx, row in df.iterrows():
+        with st.expander(f"{row['Type']} Explanation {idx+1}"):
+            # Existing explanation
+            st.write("**Explanation:**")
+            st.markdown(row["Explanation"])
+            st.write("**Critique:**")
+            st.markdown(row["Critique"])
+
+            # Researcher annotations
+            confirm = st.radio(f"Is this critique fair? (Entry {idx+1})", ["✅ Yes", "❌ No"], key=f"confirm_{idx}")
+            notes = st.text_area(f"Additional notes for Entry {idx+1}", key=f"notes_{idx}")
+
+            # Save researcher annotations back
+            st.session_state["results"][idx]["Researcher_Confirmed"] = confirm
+            st.session_state["results"][idx]["Researcher_Notes"] = notes
+else:
+    st.info("ℹ️ No critiques to annotate yet.")
+
+
+st.markdown("---")
+st.header("Researcher Annotation Summary")
+
+if st.session_state["results"]:
+    df = pd.DataFrame(st.session_state["results"])
+
+    if "Researcher_Confirmed" in df.columns:
+        # Only show if researcher annotations exist
+        st.dataframe(df[["Type", "Score", "Researcher_Confirmed", "Researcher_Notes"]])
+    else:
+        st.info("ℹ️ No researcher annotations yet.")
+else:
+    st.info("ℹ️ No results to display yet.")
