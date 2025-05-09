@@ -107,7 +107,7 @@ Finally, summarize: Overall, this explanation is Excellent / Good / Poor because
 #     return response.choices[0].message.content
 
 # --- UI ---
-st.title("Causal Fairness Audit (Lite Version)")
+st.title("Causal Fairness Audit")
 
 # (Optional) Upload .rda file (even if not used in this version)
 uploaded_file = st.file_uploader("Upload COMPAS .rda file (Optional)", type="rda")
@@ -327,6 +327,38 @@ if st.session_state["show_compas"]:
 st.markdown("---")
 st.header("Validation")
 
+def reflect_and_rewrite(explanation_text, critique):
+    from openai import OpenAI
+    client = OpenAI(api_key=openai.api_key)
+
+    prompt = f"""
+You are a fairness-aware AI system.
+
+Here is your original explanation:
+---
+{explanation_text}
+---
+
+And here is a critique:
+---
+{critique}
+---
+
+Please revise your explanation to:
+- Address all weaknesses in the critique
+- Improve clarity and accuracy
+- Follow a causal decomposition framework
+
+Write the revised explanation below:
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content
+
 if st.button("Critique Audit Explanation", key="critique_audit"):
     if "current_audit_explanation" in st.session_state:
         with st.spinner("Critiquing Audit Explanation..."):
@@ -385,6 +417,33 @@ if st.button("Critique Outcome Control Explanation", key="critique_outcome_contr
             st.markdown(critique_text)
     else:
         st.warning("⚠️ Please first generate the Outcome Control explanation.")
+
+st.markdown("---")
+st.header("🔁 Revisions (Optional)")
+
+if st.session_state.get("results"):
+    for idx, entry in enumerate(st.session_state["results"]):
+        with st.expander(f"{entry['Type']} Explanation {idx+1}"):
+            st.write("**Original Explanation**")
+            st.markdown(entry["Explanation"])
+
+            st.write("**Critique**")
+            st.markdown(entry["Critique"])
+
+            # Only show if revision hasn't already been added
+            if "Revised_Explanation" not in entry:
+                if st.button(f"Revise Explanation {idx+1}", key=f"revise_{idx}"):
+                    with st.spinner("Revising explanation..."):
+                        revised = reflect_and_rewrite(entry["Explanation"], entry["Critique"])
+                        st.session_state["results"][idx]["Revised_Explanation"] = revised
+                        st.success("✅ Revised explanation generated!")
+                        st.markdown("### 🔁 Revised Explanation")
+                        st.markdown(revised)
+            else:
+                st.markdown("### 🔁 Revised Explanation (Saved)")
+                st.markdown(entry["Revised_Explanation"])
+else:
+    st.info("ℹ️ No critique results yet to revise.")
 
 # --- Scoring Table and Leaderboard ---
 st.markdown("---")
