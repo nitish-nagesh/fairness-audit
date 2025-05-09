@@ -17,6 +17,7 @@ openai.api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets 
 
 
 
+
 def explain_with_agent(text):
     from openai import OpenAI
     client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -518,3 +519,47 @@ if st.session_state["results"]:
         st.info("ℹ️ No researcher annotations yet.")
 else:
     st.info("ℹ️ No results to display yet.")
+
+
+st.markdown("---")
+st.header("🤖 Automated Fairness Agent Pipeline")
+
+if st.button("Run Full Audit → Validation → Revision Pipeline"):
+    run_pipeline = True
+else:
+    run_pipeline = False
+
+
+if run_pipeline:
+    with st.spinner("Running full pipeline..."):
+
+        # STEP 1: Audit Explanation
+        explanation = explain_with_agent(audit_result)
+        st.session_state["current_audit_explanation"] = explanation
+
+        # STEP 2: Critique
+        critique_text, score_label = critique_explanation(explanation)
+        numeric_score = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score_label, -1)
+
+        # Save result
+        st.session_state["results"].append({
+            "Type": "Audit",
+            "Explanation": explanation,
+            "Critique": critique_text,
+            "Score": score_label,
+            "NumericScore": numeric_score
+        })
+
+        # STEP 3: Revision
+        revised = reflect_and_rewrite(explanation, critique_text)
+        st.session_state["results"][-1]["Revised_Explanation"] = revised
+
+        # Display all outputs
+        st.subheader("✅ Explanation")
+        st.markdown(explanation)
+
+        st.subheader("🧐 Critique")
+        st.markdown(critique_text)
+
+        st.subheader("🔁 Revised Explanation")
+        st.markdown(revised)
