@@ -418,7 +418,7 @@ if st.button("Critique Outcome Control Explanation", key="critique_outcome_contr
     else:
         st.warning("⚠️ Please first generate the Outcome Control explanation.")
 
-st.write("🔍 DEBUG: Results in session state", st.session_state.get("results", []))
+# st.write("🔍 DEBUG: Results in session state", st.session_state.get("results", []))
 st.markdown("---")
 st.header("🔁 Revisions (Optional)")
 
