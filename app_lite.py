@@ -135,6 +135,10 @@ ett: -0.0521 (±0.0119)
 # --- Initialize Session State ---
 if "results" not in st.session_state:
     st.session_state["results"] = []
+
+# --- Initialize Memory Store ---
+if "memory_poor_explanations" not in st.session_state:
+    st.session_state["memory_poor_explanations"] = set()
     
 st.markdown("---")
 st.header("Fairness Audit")
@@ -524,53 +528,119 @@ else:
 st.markdown("---")
 st.header("🤖 Automated Fairness Agent Pipeline")
 
-if st.button("Run Full Audit → Validation → Revision Pipeline"):
-    with st.spinner("🤖 Running full audit pipeline..."):
-        run_audit_pipeline(audit_text=audit_result, max_attempts=3, goal_score=1)
+def generate_counter_explanation(original_text):
+    from openai import OpenAI
+    client = OpenAI(api_key=openai.api_key)
+    
+    prompt = f"""
+You are a fairness-aware assistant. Here is an explanation about a fairness audit:
+---
+{original_text}
+---
+Now, generate an alternative explanation that:
+- Uses a different reasoning path
+- Prioritizes clarity and logic
+- May disagree with the original explanation if justified
+"""
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content.strip()
 
-
-def run_audit_pipeline(audit_text, max_attempts=3, goal_score=1):
+def full_audit_pipeline(audit_result, max_attempts=5, score_threshold="Good"):
     from openai import OpenAI
     client = OpenAI(api_key=openai.api_key)
 
-    explanation = explain_with_agent(audit_text)
-    st.session_state["current_audit_explanation"] = explanation
-    st.markdown("### 🔍 Audit Explanation")
-    st.markdown(explanation)
+    # Initialize memory
+    if "memory_poor_explanations" not in st.session_state:
+        st.session_state["memory_poor_explanations"] = set()
+    used_explanations = st.session_state["memory_poor_explanations"]
 
-    critique_text, score_label = critique_explanation(explanation)
-    numeric_score = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score_label, -1)
-    st.markdown("### 🧪 Critique")
-    st.markdown(critique_text)
+    attempt = 0
+    score_label = "Poor"
 
-    attempts = 0
-    while numeric_score < goal_score and attempts < max_attempts:
-        st.info(f"Attempt {attempts+1}: Revising explanation due to score: {score_label}")
-        explanation = reflect_and_rewrite(explanation, critique_text)
+    while attempt < max_attempts and score_label not in ["Good", "Excellent"]:
+        attempt += 1
+
+        # STEP 1: Generate explanation
+        explanation = explain_with_agent(audit_result)
+
+        if explanation.strip() in used_explanations:
+            st.warning(f"🚫 Skipping duplicate explanation (Attempt {attempt})")
+            continue
+
+        st.session_state["current_audit_explanation"] = explanation
+
+        # STEP 2: Critique
         critique_text, score_label = critique_explanation(explanation)
         numeric_score = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score_label, -1)
-        attempts += 1
 
-    st.session_state["results"].append({
-        "Type": "Audit",
-        "Explanation": explanation,
-        "Critique": critique_text,
-        "Score": score_label,
-        "NumericScore": numeric_score,
-        "Attempts": attempts
-    })
+        # STEP 3: Revision
+        revised = reflect_and_rewrite(explanation, critique_text)
 
-    if numeric_score < goal_score:
-        st.warning("⚠️ Final explanation still scored low.")
-        user_choice = st.radio(
-            "Choose what the assistant should do next:",
-            ["Try another revision", "Show critique details", "Stop here"],
-            key="audit_low_score_action"
-        )
-        if user_choice == "Try another revision":
-            revised = reflect_and_rewrite(explanation, critique_text)
-            st.markdown("### 🔁 Final Manual Revision")
-            st.markdown(revised)
-        elif user_choice == "Show critique details":
-            st.markdown("### 📋 Critique Details")
-            st.markdown(critique_text)
+        # Save poor explanation to memory
+        if score_label == "Poor":
+            used_explanations.add(explanation.strip())
+
+        # Save result
+        st.session_state["results"].append({
+            "Type": f"Audit (Attempt {attempt})",
+            "Explanation": explanation,
+            "Critique": critique_text,
+            "Score": score_label,
+            "NumericScore": numeric_score,
+            "Revised_Explanation": revised
+        })
+
+        # Display
+        st.subheader(f"✅ Explanation (Attempt {attempt})")
+        st.markdown(explanation)
+        st.subheader("🧐 Critique")
+        st.markdown(critique_text)
+        st.subheader("🔁 Revised Explanation")
+        st.markdown(revised)
+
+        # Break loop if threshold met
+        if score_label in ["Good", "Excellent"]:
+            break
+
+    # --- DEBATE PHASE ---
+    if score_label in ["Good", "Excellent"]:
+        with st.spinner("🤖 Running debate on current explanation..."):
+            alt = generate_counter_explanation(explanation)
+            critique1, score1 = critique_explanation(explanation)
+            critique2, score2 = critique_explanation(alt)
+
+            numeric_score1 = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score1, -1)
+            numeric_score2 = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score2, -1)
+
+            winner = "Original" if numeric_score1 >= numeric_score2 else "Alternative"
+
+            st.markdown("### 🤝 Debate Results")
+            st.markdown("**Original Explanation:**")
+            st.markdown(explanation)
+            st.markdown("**Critique:**")
+            st.markdown(critique1)
+
+            st.markdown("**Alternative Explanation:**")
+            st.markdown(alt)
+            st.markdown("**Critique:**")
+            st.markdown(critique2)
+
+            st.success(f"🏆 **Winner:** {winner} explanation chosen.")
+
+            st.session_state["results"].append({
+                "Type": "Debate",
+                "Explanation": explanation,
+                "Counter": alt,
+                "Critique_Original": critique1,
+                "Critique_Alternative": critique2,
+                "Winner": winner
+            })
+
+if st.button("🤖 Run Full Audit + Memory + Debate Pipeline"):
+    with st.spinner("Running autonomous fairness pipeline..."):
+        full_audit_pipeline(audit_result)
+
+
