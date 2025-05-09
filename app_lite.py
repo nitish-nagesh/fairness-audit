@@ -525,41 +525,52 @@ st.markdown("---")
 st.header("🤖 Automated Fairness Agent Pipeline")
 
 if st.button("Run Full Audit → Validation → Revision Pipeline"):
-    run_pipeline = True
-else:
-    run_pipeline = False
+    with st.spinner("🤖 Running full audit pipeline..."):
+        run_audit_pipeline(audit_text=audit_result, max_attempts=3, goal_score=1)
 
 
-if run_pipeline:
-    with st.spinner("Running full pipeline..."):
+def run_audit_pipeline(audit_text, max_attempts=3, goal_score=1):
+    from openai import OpenAI
+    client = OpenAI(api_key=openai.api_key)
 
-        # STEP 1: Audit Explanation
-        explanation = explain_with_agent(audit_result)
-        st.session_state["current_audit_explanation"] = explanation
+    explanation = explain_with_agent(audit_text)
+    st.session_state["current_audit_explanation"] = explanation
+    st.markdown("### 🔍 Audit Explanation")
+    st.markdown(explanation)
 
-        # STEP 2: Critique
+    critique_text, score_label = critique_explanation(explanation)
+    numeric_score = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score_label, -1)
+    st.markdown("### 🧪 Critique")
+    st.markdown(critique_text)
+
+    attempts = 0
+    while numeric_score < goal_score and attempts < max_attempts:
+        st.info(f"Attempt {attempts+1}: Revising explanation due to score: {score_label}")
+        explanation = reflect_and_rewrite(explanation, critique_text)
         critique_text, score_label = critique_explanation(explanation)
         numeric_score = {"Excellent": 2, "Good": 1, "Poor": 0}.get(score_label, -1)
+        attempts += 1
 
-        # Save result
-        st.session_state["results"].append({
-            "Type": "Audit",
-            "Explanation": explanation,
-            "Critique": critique_text,
-            "Score": score_label,
-            "NumericScore": numeric_score
-        })
+    st.session_state["results"].append({
+        "Type": "Audit",
+        "Explanation": explanation,
+        "Critique": critique_text,
+        "Score": score_label,
+        "NumericScore": numeric_score,
+        "Attempts": attempts
+    })
 
-        # STEP 3: Revision
-        revised = reflect_and_rewrite(explanation, critique_text)
-        st.session_state["results"][-1]["Revised_Explanation"] = revised
-
-        # Display all outputs
-        st.subheader("✅ Explanation")
-        st.markdown(explanation)
-
-        st.subheader("🧐 Critique")
-        st.markdown(critique_text)
-
-        st.subheader("🔁 Revised Explanation")
-        st.markdown(revised)
+    if numeric_score < goal_score:
+        st.warning("⚠️ Final explanation still scored low.")
+        user_choice = st.radio(
+            "Choose what the assistant should do next:",
+            ["Try another revision", "Show critique details", "Stop here"],
+            key="audit_low_score_action"
+        )
+        if user_choice == "Try another revision":
+            revised = reflect_and_rewrite(explanation, critique_text)
+            st.markdown("### 🔁 Final Manual Revision")
+            st.markdown(revised)
+        elif user_choice == "Show critique details":
+            st.markdown("### 📋 Critique Details")
+            st.markdown(critique_text)
