@@ -111,7 +111,7 @@ Finally, summarize: Overall, this explanation is Excellent / Good / Poor because
 st.title("Causal Fairness Audit")
 
 # (Optional) Upload .rda file (even if not used in this version)
-uploaded_file = st.file_uploader("Upload COMPAS .rda file (Optional)", type="rda")
+uploaded_file = st.file_uploader("Upload the raw dataset for generating and evaluating synthetic data", type="rda")
 
 if uploaded_file is not None:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".rda") as tmp_file:
