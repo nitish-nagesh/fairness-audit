@@ -1,0 +1,2 @@
+The preprocessing code, along with both raw and processed real data, is included with the corresponding scripts.
+Please note that for the MIMIC dataset, the raw (unprocessed) data is not provided due to its large size (~50GB). However, the processed data is included, and the full preprocessing code is available.
