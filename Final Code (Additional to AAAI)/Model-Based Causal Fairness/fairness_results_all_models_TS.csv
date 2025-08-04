@@ -1,0 +1,6 @@
+"Model","Group_Comparison","tv_mean","tv_sd","ctfde_mean","ctfde_sd","ctfie_mean","ctfie_sd","ctfse_mean","ctfse_sd","ett_mean","ett_sd"
+"Decision_Tree","White vs NonWhite",0.0597,0.0892,0.0374,0.0437,-0.005,0.0592,-0.0173,0.067,0.0424,0.0637
+"Logistic_Regression","White vs NonWhite",0.0679,0.0867,-0.0047,0.0198,-0.0571,0.0635,-0.0155,0.0644,0.0524,0.0645
+"Random_Forest","White vs NonWhite",0.0618,0.0853,0.0031,0.0296,-0.0451,0.0645,-0.0136,0.0623,0.0482,0.0629
+"SVM","White vs NonWhite",0.0623,0.0866,-0.0067,0.0082,-0.05,0.0626,-0.019,0.0668,0.0434,0.0637
+"XGBoost","White vs NonWhite",0.0494,0.0865,-0.006,0.0326,-0.0402,0.0615,-0.0152,0.0613,0.0341,0.0636
