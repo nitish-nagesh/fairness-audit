@@ -1,0 +1,2 @@
+Model,Precision,Recall,AUC,FTU,DP
+XGBoost,0.703 ± 0.000,0.653 ± 0.000,0.853 ± 0.000,0.037 ± 0.000,0.074 ± 0.000
