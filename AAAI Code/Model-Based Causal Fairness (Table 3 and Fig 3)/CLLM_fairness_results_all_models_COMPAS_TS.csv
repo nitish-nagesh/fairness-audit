@@ -1,0 +1,6 @@
+"Model","Group_Comparison","tv_mean","tv_sd","ctfde_mean","ctfde_sd","ctfie_mean","ctfie_sd","ctfse_mean","ctfse_sd","ett_mean","ett_sd"
+"Decision_Tree","African-American vs Non-African-American",-0.1554,0.0825,-0.0068,0.0197,0.131,0.0501,0.0176,0.0568,-0.1378,0.0524
+"Logistic_Regression","African-American vs Non-African-American",-0.1686,0.0855,-0.0197,0.0159,0.1311,0.0474,0.0178,0.0596,-0.1508,0.0503
+"Random_Forest","African-American vs Non-African-American",-0.125,0.0869,0.0278,0.0165,0.139,0.0424,0.0137,0.064,-0.1113,0.0452
+"SVM","African-American vs Non-African-American",-0.1307,0.0871,0.0015,0.0114,0.1245,0.054,0.0077,0.0629,-0.123,0.0552
+"XGBoost","African-American vs Non-African-American",-0.1782,0.0832,0.0013,0.0151,0.1582,0.0451,0.0212,0.0648,-0.1569,0.049
