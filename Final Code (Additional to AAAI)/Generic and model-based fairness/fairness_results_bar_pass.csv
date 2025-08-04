@@ -1,0 +1,11 @@
+Model,Source,DPD,DI,∆TPR (EoO),∆FPR,∆PPV,∆Accuracy,EOD
+pred_decision_tree,Real,0.1515,0.843,0.1349,0.2117,0.069,0.1664,0.2117
+pred_logistic_regression,Real,0.0559,0.9441,0.0335,0.2093,0.0664,0.0898,0.2093
+pred_random_forest,Real,0.0629,0.9369,0.0409,0.1986,0.0665,0.0955,0.1986
+pred_svm,Real,0.0,1.0,0.0,0.0,0.0871,0.0871,0.0
+pred_xgboost,Real,0.0797,0.92,0.0528,0.262,0.0614,0.0993,0.262
+pred_decision_tree,Synthetic,0.0282,1.0565,0.0973,-0.0813,0.0685,0.0881,0.0973
+pred_logistic_regression,Synthetic,0.0,1.0,0.0973,-0.0221,0.018,0.0599,0.0973
+pred_random_forest,Synthetic,0.0328,1.0711,0.0573,-0.0473,0.0457,0.0542,0.0573
+pred_svm,Synthetic,0.0662,0.8814,0.1081,0.0949,-0.0862,0.005,0.1081
+pred_xgboost,Synthetic,0.0221,1.0459,0.0627,-0.034,0.0274,0.0491,0.0627
