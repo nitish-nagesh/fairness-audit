@@ -2,11 +2,11 @@
 
 ## 📋 Overview
 
-This directory contains the complete implementation and experimental results for the **FairTabGen** paper: "FairTabGen: Fair Tabular Data Generation for Causal Fairness Audit". The code is organized by figures and tables from the paper, providing comprehensive reproducibility for all experiments.
+This directory contains the complete implementation and experimental results for the **FairTabGen** paper: "FairTabGen: Unifying Counterfactual and Causal Fairness in Synthetic Tabular Data Generation". The code is organized by figures and tables from the paper, providing comprehensive reproducibility for all experiments.
 
 ## 🎯 Paper Information
 
-**Title**: FairTabGen: Fair Tabular Data Generation for Causal Fairness Audit  
+**Title**: FairTabGen: Unifying Counterfactual and Causal Fairness in Synthetic Tabular Data Generation  
 **Conference**: AAAI 2025  
 **Authors**: [Anonymized for Review]  
 **Repository**: Private repository for AAAI 2025 submission
@@ -132,6 +132,7 @@ python generate_mimic_decaf_samples.py
 ## 🔧 Key Features
 
 ### FairTabGen Approach
+- **Unified Fairness**: Combines counterfactual and causal fairness
 - **Fairness-Constrained Generation**: Novel approach to synthetic data generation
 - **Multi-Objective Optimization**: Balance quality and fairness
 - **Domain-Agnostic**: Applicable across different domains
@@ -155,7 +156,7 @@ If you use this code in your research, please cite our paper:
 
 ```bibtex
 @inproceedings{fairtabgen2025,
-  title={FairTabGen: Fair Tabular Data Generation for Causal Fairness Audit},
+  title={FairTabGen: Unifying Counterfactual and Causal Fairness in Synthetic Tabular Data Generation},
   author={[Authors anonymized for review]},
   booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
   year={2025}
