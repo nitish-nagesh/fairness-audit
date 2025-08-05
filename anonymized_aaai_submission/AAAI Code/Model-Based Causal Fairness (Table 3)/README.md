@@ -31,7 +31,6 @@ Rscript single.R
 ### Generate Predictions
 ```python
 # Run the COMPAS.ipynb notebook
-# This will generate model predictions for all datasets
 ```
 
 ## 📁 File Descriptions
