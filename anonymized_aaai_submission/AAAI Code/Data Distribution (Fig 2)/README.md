@@ -2,14 +2,14 @@
 
 ## 📋 Overview
 
-This directory contains the implementation and analysis for **Figure 2** of the FairTabGen paper, which presents the data distribution analysis across different datasets and synthetic data generation methods. The analysis demonstrates how FairTabGen maintains statistical properties while improving fairness.
+This directory contains the implementation and analysis for Figure 2 of the FairTabGen paper, which presents data distribution analysis across different datasets and synthetic data generation methods.
 
-## 🎯 Research Objective
+## 🎯 Purpose
 
-Analyze and visualize data distributions to demonstrate:
-- **Statistical Similarity**: How well synthetic data preserves real data distributions
-- **Fairness Improvement**: Distribution changes that lead to better fairness
-- **Method Comparison**: FairTabGen vs. baseline approaches
+Analyze and visualize data distributions to compare:
+- Statistical similarity between real and synthetic data
+- Distribution changes for fairness improvement
+- Method comparison across different approaches
 
 ## 📊 Datasets Analyzed
 
@@ -19,7 +19,7 @@ Analyze and visualize data distributions to demonstrate:
 3. **MIMIC Dataset**: Healthcare outcomes (processed)
 
 ### Synthetic Datasets
-1. **FairTabGen Generated** (`generated_data_Our_prompt_*.csv`): Our approach
+1. **Our Approach Generated** (`generated_data_Our_prompt_*.csv`): Our method
 2. **Baseline Generated**: Comparison with existing methods
 
 ## 🚀 Procedure for Reproducing Results
@@ -56,114 +56,52 @@ mimic_synth = pd.read_csv("generated_data_Our_prompts_MIMIC.csv")
 
 ### Step 4: Generate Figure 2
 The notebook will create:
-- **Distribution Comparisons**: Real vs. synthetic data
-- **Fairness Metrics**: Before and after FairTabGen
-- **Statistical Tests**: Kolmogorov-Smirnov tests
-- **Visualization**: Multi-panel figure showing distributions
+- Distribution comparisons between real and synthetic data
+- Fairness metrics before and after our approach
+- Statistical tests for distribution similarity
+- Multi-panel figure showing distributions
 
 ## 📈 Expected Results (Figure 2)
 
 ### Panel A: Criminal Justice Dataset
-- **Real Data Distribution**: Original COMPAS dataset
-- **FairTabGen Distribution**: Our synthetic data
-- **Key Finding**: Preserved statistical properties with improved fairness
+- Real data distribution vs. synthetic data distribution
+- Distribution similarity assessment
+- Fairness improvement visualization
 
 ### Panel B: Legal Dataset
-- **Real Data Distribution**: Bar exam dataset
-- **FairTabGen Distribution**: Our synthetic data
-- **Key Finding**: Maintained accuracy while reducing bias
+- Legal domain-specific distribution analysis
+- Bar exam data distribution comparison
+- Method comparison in legal domain
 
 ### Panel C: MIMIC Dataset
-- **Real Data Distribution**: Healthcare dataset
-- **FairTabGen Distribution**: Our synthetic data
-- **Key Finding**: Balanced representation across demographic groups
+- Healthcare-specific distribution analysis
+- Healthcare outcome distribution comparison
+- Method comparison in healthcare domain
 
-### Panel D: Fairness Metrics Comparison
-- **Demographic Parity**: Before vs. after FairTabGen
-- **Equalized Odds**: Fairness improvement metrics
-- **Statistical Distance**: KL divergence measures
+### Panel D: Overall Comparison
+- Cross-dataset distribution comparison
+- Statistical significance assessment
+- Effect size visualization
 
 ## 📁 File Descriptions
 
 ### Data Files
 - `compas_cleaned.csv`: Real criminal justice dataset
 - `bar_pass_prediction (processed version).csv`: Real legal dataset
-- `generated_data_Our_prompt_COMPAS.csv`: FairTabGen criminal justice synthetic data
-- `generated_data_Our_prompts_Law.csv`: FairTabGen legal synthetic data
-- `generated_data_Our_prompts_MIMIC.csv`: FairTabGen MIMIC synthetic data
+- `generated_data_Our_prompt_COMPAS.csv`: Our approach criminal justice data
+- `generated_data_Our_prompts_Law.csv`: Our approach legal data
+- `generated_data_Our_prompts_MIMIC.csv`: Our approach MIMIC data
 
 ### Analysis Files
 - `Data Analysis.ipynb`: Complete analysis and visualization notebook
 
-## 🔧 Analysis Parameters
+## 📝 Notes
 
-### Distribution Metrics
-- **Kolmogorov-Smirnov Test**: Statistical similarity measure
-- **Wasserstein Distance**: Distribution distance metric
-- **KL Divergence**: Information-theoretic similarity
-
-### Fairness Metrics
-- **Demographic Parity**: Equal positive prediction rates
-- **Equalized Odds**: Equal true/false positive rates
-- **Statistical Parity**: Equal selection rates
-
-### Visualization Settings
-- **Histogram Bins**: 30 bins for continuous variables
-- **Color Scheme**: Consistent across all panels
-- **Figure Size**: 12x8 inches for publication quality
-
-## 📊 Results Interpretation
-
-### Statistical Similarity
-1. **FairTabGen maintains high similarity** to real data distributions
-2. **KL divergence < 0.1** for most features
-3. **Wasserstein distance < 0.05** for continuous variables
-
-### Fairness Improvement
-1. **Demographic parity improved** by 15-25% across datasets
-2. **Equalized odds enhanced** by 10-20%
-3. **Statistical parity balanced** across protected attributes
-
-### Method Comparison
-1. **FairTabGen outperforms baselines** in fairness metrics
-2. **Statistical properties preserved** better than alternatives
-3. **Consistent improvement** across all datasets
-
-## 🎯 Key Findings
-
-- **FairTabGen preserves statistical properties** while improving fairness
-- **Distribution similarity maintained** across all features
-- **Fairness metrics improved** consistently across datasets
-- **Robust performance** across different data types and sizes
-
-## 📝 Technical Notes
-
-### Data Preprocessing
 - All datasets normalized for fair comparison
 - Missing values handled consistently
 - Categorical variables encoded appropriately
-
-### Statistical Tests
-- **Significance level**: α = 0.05
-- **Multiple comparisons**: Bonferroni correction applied
-- **Effect sizes**: Cohen's d reported
-
-### Visualization Guidelines
-- **Color-blind friendly**: Accessible color schemes
-- **High resolution**: 300 DPI for publication
-- **Consistent formatting**: Matplotlib style guidelines
-
-## 🔍 Troubleshooting
-
-### Common Issues
-1. **Memory errors**: Use smaller sample sizes for large datasets
-2. **API limits**: Ensure OpenAI API key is configured
-3. **Version conflicts**: Use provided requirements.txt
-
-### Performance Tips
-1. **Use vectorized operations** for large datasets
-2. **Parallel processing** for multiple comparisons
-3. **Caching results** for repeated analyses
+- Statistical tests applied for significance
+- High-resolution output for publication
 
 ---
 

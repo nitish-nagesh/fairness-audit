@@ -7,26 +7,9 @@
 **Authors**: [Anonymized for Review]  
 **Repository**: Private repository for AAAI 2025 submission
 
-## 🎯 Research Overview
+## 🎯 Overview
 
-This repository contains the complete implementation and experimental results for **FairTabGen**, a novel approach that unifies counterfactual and causal fairness in synthetic tabular data generation. Our method addresses the critical challenge of generating fair synthetic data while maintaining statistical properties and improving fairness across multiple domains.
-
-## 🔬 Key Contributions
-
-### 1. **Unified Fairness Framework**
-- **Counterfactual Fairness**: What-if analysis for individual and group fairness
-- **Causal Fairness**: Causal effect decomposition and bias mitigation
-- **Synthetic Data Generation**: Fairness-constrained generation approach
-
-### 2. **Multi-Domain Evaluation**
-- **Criminal Justice Dataset**: Recidivism prediction fairness
-- **Legal Dataset**: Bar exam pass prediction fairness
-- **MIMIC Dataset**: Healthcare outcome fairness
-
-### 3. **Comprehensive Experimental Design**
-- **Multiple ML Models**: Decision Trees, Random Forest, SVM, XGBoost, Logistic Regression
-- **Multiple Baselines**: CLLM and DECAF comparison
-- **Multiple Metrics**: Quality, fairness, and causal metrics
+This repository contains the implementation and experimental results for the FairTabGen paper. The code is organized by figures and tables from the paper for easy reproduction of results.
 
 ## 📁 Repository Structure
 
@@ -57,67 +40,15 @@ R -e "install.packages(c('faircause', 'dplyr', 'ggplot2'))"
 3. **Analysis**: Follow README files in each experiment folder
 4. **Visualization**: Run notebooks for figures and tables
 
-## 📊 Experimental Results
+## 📊 Experimental Organization
 
-### Table 1: Data Generation Quality Metrics
-- **FairTabGen**: Improved fairness metrics across all datasets
-- **Statistical Similarity**: Maintained high similarity to real data
-- **Data Quality**: Preserved quality while improving fairness
+The results are organized by figures and tables from the paper:
 
-### Table 2: Fairness Comparison Results
-- **FairTabGen vs. CLLM**: 30-40% improvement in fairness metrics
-- **FairTabGen vs. DECAF**: 40-50% improvement in fairness metrics
-- **Consistent Performance**: Across all datasets and domains
-
-### Table 3: Causal Fairness Metrics
-- **Total Variation (TV)**: Reduced by 30-40% with FairTabGen
-- **Direct Effects (CTFDE)**: Reduced by 50-60% with FairTabGen
-- **Indirect Effects (CTFIE)**: Balanced across protected attributes
-- **Statistical Significance**: Confirmed for all improvements
-
-### Figure 2: Data Distribution Analysis
-- **Statistical Similarity**: KL divergence < 0.1 for most features
-- **Fairness Improvement**: Visible distribution shifts toward fairness
-- **Quality Preservation**: Statistical properties maintained
-
-### Figure 3: Data Quality Analysis
-- **Quality Metrics**: Completeness, consistency, accuracy assessment
-- **Domain Comparison**: Quality across different datasets
-- **Method Comparison**: FairTabGen vs. baseline quality performance
-- **Statistical Validation**: Quality improvement significance
-
-### Figure 4: Counterfactual Fairness Analysis
-- **Individual Counterfactuals**: What-if scenarios for individual cases
-- **Group Counterfactuals**: What-if scenarios for protected groups
-- **Fairness Optimization**: Quality vs. fairness trade-off analysis
-- **Robust Performance**: Across different counterfactual scenarios
-
-### Figure 5: Bias Mitigation Algorithms
-- **Pre-processing Algorithms**: Data-level bias mitigation techniques
-- **In-processing Algorithms**: Model-level bias mitigation approaches
-- **Post-processing Algorithms**: Prediction-level bias mitigation methods
-- **Hybrid Approaches**: Combination of multiple bias mitigation techniques
-
-## 🔧 Key Features
-
-### FairTabGen Approach
-- **Unified Fairness**: Combines counterfactual and causal fairness
-- **Fairness-Constrained Generation**: Novel approach to synthetic data generation
-- **Multi-Objective Optimization**: Balance quality and fairness
-- **Domain-Agnostic**: Applicable across different domains
-- **Scalable**: Efficient for different dataset sizes
-
-### Experimental Design
-- **Multiple Datasets**: Criminal Justice, Legal, and MIMIC datasets
-- **Multiple Models**: Decision Trees, Random Forest, SVM, XGBoost, Logistic Regression
-- **Multiple Baselines**: CLLM and DECAF comparison
-- **Comprehensive Evaluation**: Quality, fairness, and causal metrics
-
-### Reproducibility
-- **Complete Code**: All scripts and notebooks provided
-- **Detailed Documentation**: README files for each folder
-- **Data Files**: All datasets and results included
-- **Parameter Settings**: All parameters documented
+- **Table 1 & 2**: Data generation experiments and results
+- **Figure 2**: Data distribution analysis
+- **Table 3**: Model-based causal fairness results
+- **Figure 3 & 4**: Data quality and counterfactual fairness analysis
+- **Figure 5**: Bias mitigation algorithms
 
 ## 📝 Citation
 

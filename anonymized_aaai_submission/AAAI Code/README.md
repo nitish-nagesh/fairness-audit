@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-This directory contains the complete implementation and experimental results for the **FairTabGen** paper: "FairTabGen: Unifying Counterfactual and Causal Fairness in Synthetic Tabular Data Generation". The code is organized by figures and tables from the paper, providing comprehensive reproducibility for all experiments.
+This directory contains the implementation and experimental results for the FairTabGen paper. The code is organized by figures and tables from the paper for easy reproduction of results.
 
 ## 🎯 Paper Information
 
@@ -15,39 +15,33 @@ This directory contains the complete implementation and experimental results for
 
 ### 📊 Data Generation (Table 1 and 2)
 - **Purpose**: Synthetic data generation experiments
-- **Content**: FairTabGen, CLLM, and DECAF generation scripts
-- **Results**: Table 1 (Data Generation Quality) and Table 2 (Fairness Comparison)
-- **Files**: Generation scripts, prompt files, synthetic data files
+- **Content**: Generation scripts, prompt files, synthetic data files
+- **Results**: Table 1 and Table 2 from the paper
 
 ### 📈 Data Distribution (Fig 2)
 - **Purpose**: Data distribution analysis and visualization
-- **Content**: Distribution comparison between real and synthetic data
-- **Results**: Figure 2 (Data Distribution Analysis)
-- **Files**: Analysis notebook, real and synthetic data files
+- **Content**: Analysis notebook, real and synthetic data files
+- **Results**: Figure 2 from the paper
 
 ### 🔬 Model-Based Causal Fairness (Table 3)
 - **Purpose**: Causal fairness analysis across multiple ML models
-- **Content**: Causal fairness metrics (TV, CTFDE, CTFIE, CTFSE, ETT)
-- **Results**: Table 3 (Causal Fairness Metrics)
-- **Files**: R analysis scripts, prediction files, fairness results
+- **Content**: R analysis scripts, prediction files, fairness results
+- **Results**: Table 3 from the paper
 
 ### 📋 Data Quality and Counterfactual Fairness (Fig 3 and 4)
 - **Purpose**: Data quality assessment and counterfactual fairness analysis
-- **Content**: Quality metrics and what-if scenario analysis
-- **Results**: Figure 3 (Data Quality Analysis) and Figure 4 (Counterfactual Fairness Analysis)
-- **Files**: Analysis notebooks, quality metrics, counterfactual results
+- **Content**: Analysis notebooks, quality metrics, counterfactual results
+- **Results**: Figure 3 and Figure 4 from the paper
 
 ### 📊 Bias Mitigation Algorithms (Fig 5)
-- **Purpose**: Comprehensive bias mitigation algorithms and fairness decomposition
-- **Content**: Advanced bias mitigation techniques and fairness metric breakdowns
-- **Results**: Figure 5 (Bias Mitigation Algorithms and Fairness Decomposition)
-- **Files**: Bias mitigation notebooks, fairness decomposition plots
+- **Purpose**: Bias mitigation algorithms and fairness decomposition
+- **Content**: Bias mitigation notebooks, fairness decomposition plots
+- **Results**: Figure 5 from the paper
 
 ### 📁 Real Data
 - **Purpose**: Real dataset preprocessing and preparation
 - **Content**: Original datasets and preprocessing code
 - **Results**: Cleaned datasets for all experiments
-- **Files**: Preprocessing notebooks, original and cleaned data files
 
 ## 🚀 Quick Start Guide
 
@@ -88,67 +82,15 @@ python generate_mimic_decaf_samples.py
 # Each folder contains detailed README files with specific instructions
 ```
 
-## 📊 Experimental Results Summary
+## 📊 Experimental Organization
 
-### Table 1: Data Generation Quality Metrics
-- **FairTabGen**: Improved fairness metrics across all datasets
-- **Statistical Similarity**: Maintained high similarity to real data
-- **Data Quality**: Preserved quality while improving fairness
+The results are organized by figures and tables from the paper:
 
-### Table 2: Fairness Comparison Results
-- **FairTabGen vs. CLLM**: 30-40% improvement in fairness metrics
-- **FairTabGen vs. DECAF**: 40-50% improvement in fairness metrics
-- **Consistent Performance**: Across all datasets and domains
-
-### Table 3: Causal Fairness Metrics
-- **Total Variation (TV)**: Reduced by 30-40% with FairTabGen
-- **Direct Effects (CTFDE)**: Reduced by 50-60% with FairTabGen
-- **Indirect Effects (CTFIE)**: Balanced across protected attributes
-- **Statistical Significance**: Confirmed for all improvements
-
-### Figure 2: Data Distribution Analysis
-- **Statistical Similarity**: KL divergence < 0.1 for most features
-- **Fairness Improvement**: Visible distribution shifts toward fairness
-- **Quality Preservation**: Statistical properties maintained
-
-### Figure 3: Data Quality Analysis
-- **Quality Metrics**: Completeness, consistency, accuracy assessment
-- **Domain Comparison**: Quality across different datasets
-- **Method Comparison**: FairTabGen vs. baseline quality performance
-- **Statistical Validation**: Quality improvement significance
-
-### Figure 4: Counterfactual Fairness Analysis
-- **Individual Counterfactuals**: What-if scenarios for individual cases
-- **Group Counterfactuals**: What-if scenarios for protected groups
-- **Fairness Optimization**: Quality vs. fairness trade-off analysis
-- **Robust Performance**: Across different counterfactual scenarios
-
-### Figure 5: Bias Mitigation Algorithms
-- **Pre-processing Algorithms**: Data-level bias mitigation techniques
-- **In-processing Algorithms**: Model-level bias mitigation approaches
-- **Post-processing Algorithms**: Prediction-level bias mitigation methods
-- **Hybrid Approaches**: Combination of multiple bias mitigation techniques
-
-## 🔧 Key Features
-
-### FairTabGen Approach
-- **Unified Fairness**: Combines counterfactual and causal fairness
-- **Fairness-Constrained Generation**: Novel approach to synthetic data generation
-- **Multi-Objective Optimization**: Balance quality and fairness
-- **Domain-Agnostic**: Applicable across different domains
-- **Scalable**: Efficient for different dataset sizes
-
-### Experimental Design
-- **Multiple Datasets**: Criminal Justice, Legal, and MIMIC datasets
-- **Multiple Models**: Decision Trees, Random Forest, SVM, XGBoost, Logistic Regression
-- **Multiple Baselines**: CLLM and DECAF comparison
-- **Comprehensive Evaluation**: Quality, fairness, and causal metrics
-
-### Reproducibility
-- **Complete Code**: All scripts and notebooks provided
-- **Detailed Documentation**: README files for each folder
-- **Data Files**: All datasets and results included
-- **Parameter Settings**: All parameters documented
+- **Table 1 & 2**: Data generation experiments and results
+- **Figure 2**: Data distribution analysis
+- **Table 3**: Model-based causal fairness results
+- **Figure 3 & 4**: Data quality and counterfactual fairness analysis
+- **Figure 5**: Bias mitigation algorithms
 
 ## 📝 Citation
 

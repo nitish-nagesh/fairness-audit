@@ -4,13 +4,13 @@
 
 This directory contains the real datasets and preprocessing code used in the FairTabGen paper. The preprocessing ensures data quality, handles missing values, and prepares datasets for synthetic data generation and fairness analysis.
 
-## 🎯 Research Objective
+## 🎯 Purpose
 
 Prepare real datasets for:
-- **Synthetic Data Generation**: Input for FairTabGen and baseline methods
-- **Fairness Analysis**: Baseline fairness metrics calculation
-- **Method Comparison**: Real data vs. synthetic data comparison
-- **Reproducibility**: Standardized data preprocessing pipeline
+- Synthetic data generation input
+- Fairness analysis baseline calculation
+- Method comparison evaluation
+- Reproducibility pipeline
 
 ## 📊 Datasets Included
 
@@ -109,116 +109,13 @@ pip install pandas numpy matplotlib seaborn jupyter
 - `Law_Preprocess.ipynb`: Legal data preprocessing
 - `MIMIC_Preprocess.ipynb`: MIMIC data preprocessing
 
-## 🔧 Preprocessing Steps
+## 📝 Notes
 
-### Data Cleaning
-1. **Missing Value Handling**: Appropriate imputation strategies
-2. **Outlier Detection**: Statistical outlier identification
-3. **Data Type Conversion**: Proper data type assignment
-4. **Feature Engineering**: Domain-specific feature creation
-
-### Fairness Preparation
-1. **Protected Attribute Identification**: Clear identification of sensitive features
-2. **Bias Assessment**: Baseline fairness metrics calculation
-3. **Data Balance**: Assessment of group representation
-4. **Quality Metrics**: Data quality assessment
-
-### Standardization
-1. **Feature Scaling**: Normalization for numerical features
-2. **Categorical Encoding**: Appropriate encoding for categorical variables
-3. **Data Validation**: Range and consistency checks
-4. **Documentation**: Complete preprocessing documentation
-
-## 📊 Data Quality Metrics
-
-### Completeness
-- **Missing Values**: < 5% for all datasets
-- **Data Coverage**: Complete feature coverage
-- **Sample Size**: Sufficient for statistical analysis
-
-### Consistency
-- **Data Types**: Consistent across all features
-- **Value Ranges**: Appropriate for each feature
-- **Format Consistency**: Standardized data format
-
-### Accuracy
-- **Domain Validation**: Values within expected ranges
-- **Logical Consistency**: Feature relationships maintained
-- **Statistical Validity**: Appropriate statistical properties
-
-## 🎯 Key Preprocessing Decisions
-
-### Criminal Justice Dataset
-1. **Feature Selection**: Relevant features for recidivism prediction
-2. **Protected Attributes**: Race, gender, age identification
-3. **Data Quality**: High-quality preprocessing for fairness analysis
-4. **Standardization**: Consistent format for all analyses
-
-### Legal Dataset
-1. **Academic Features**: GPA, test scores, academic history
-2. **Demographic Features**: Gender, race, socioeconomic status
-3. **Outcome Variable**: Bar exam pass/fail prediction
-4. **Quality Assurance**: Academic domain-specific validation
-
-### MIMIC Dataset
-1. **Clinical Features**: Medical variables and outcomes
-2. **Demographic Features**: Age, gender, insurance status
-3. **Healthcare Context**: Domain-specific preprocessing
-4. **Privacy Protection**: HIPAA-compliant preprocessing
-
-## 📝 Technical Notes
-
-### Data Privacy
-- **Anonymization**: All identifying information removed
-- **Privacy Protection**: HIPAA and FERPA compliance
-- **Data Sharing**: Appropriate data sharing protocols
-- **Ethical Considerations**: IRB approval and ethical guidelines
-
-### Reproducibility
-- **Version Control**: All preprocessing steps documented
-- **Random Seeds**: Reproducible random number generation
-- **Parameter Documentation**: All preprocessing parameters recorded
-- **Code Comments**: Comprehensive code documentation
-
-### Quality Assurance
-- **Automated Checks**: Data quality validation scripts
-- **Manual Review**: Domain expert review of preprocessing
-- **Statistical Validation**: Statistical tests for data quality
-- **Cross-validation**: Multiple validation approaches
-
-## 🔍 Troubleshooting
-
-### Common Issues
-1. **Memory limitations**: Use chunked processing for large datasets
-2. **Missing values**: Implement appropriate imputation strategies
-3. **Data type conflicts**: Ensure consistent data types
-4. **Encoding issues**: Handle categorical variables appropriately
-
-### Performance Tips
-1. **Vectorized operations** for large datasets
-2. **Parallel processing** for multiple preprocessing steps
-3. **Caching results** for repeated preprocessing
-4. **Incremental processing** for very large datasets
-
-## 📊 Baseline Fairness Metrics
-
-### Criminal Justice Dataset
-- **Demographic Parity**: Baseline unfairness measure
-- **Equalized Odds**: Baseline discrimination measure
-- **Statistical Parity**: Baseline selection bias
-- **Individual Fairness**: Baseline individual-level fairness
-
-### Legal Dataset
-- **Academic Fairness**: Baseline academic bias
-- **Demographic Parity**: Baseline demographic bias
-- **Equalized Odds**: Baseline prediction bias
-- **Statistical Parity**: Baseline selection bias
-
-### MIMIC Dataset
-- **Healthcare Fairness**: Baseline healthcare bias
-- **Demographic Parity**: Baseline demographic bias
-- **Equalized Odds**: Baseline prediction bias
-- **Statistical Parity**: Baseline selection bias
+- All identifying information removed for privacy
+- Missing values handled consistently
+- Data types converted appropriately
+- Protected attributes clearly identified
+- Statistical validation performed
 
 ---
 
