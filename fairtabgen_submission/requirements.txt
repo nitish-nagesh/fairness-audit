@@ -1,0 +1,5 @@
+streamlit
+pyreadr
+openai
+python-dotenv
+matplotlib
