@@ -14,7 +14,6 @@ pip install pandas numpy matplotlib seaborn jupyter
 ### Run Analysis
 ```python
 # Run the Data Analysis.ipynb notebook
-# This will generate Figure 2 visualizations
 ```
 
 ## 📁 File Descriptions
