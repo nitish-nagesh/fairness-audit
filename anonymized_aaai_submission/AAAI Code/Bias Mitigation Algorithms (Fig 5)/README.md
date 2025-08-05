@@ -14,13 +14,10 @@ pip install pandas numpy matplotlib seaborn plotly jupyter
 ### Run Visualization Notebooks
 ```python
 # Run the COMPAS_Visualization.ipynb notebook
-# This will generate Figure 5A: Criminal Justice bias mitigation algorithms
 
 # Run the Law_Vis.ipynb notebook
-# This will generate Figure 5B: Legal dataset bias mitigation algorithms
 
 # Run the MIMIC_Vis.ipynb notebook
-# This will generate Figure 5C: MIMIC dataset bias mitigation algorithms
 ```
 
 ## 📁 File Descriptions
