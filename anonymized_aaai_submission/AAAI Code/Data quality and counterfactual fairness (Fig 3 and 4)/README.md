@@ -1,8 +1,8 @@
-# Data Quality and Counterfactual Fairness Analysis for FairTabGen (Figure 4)
+# Data Quality and Counterfactual Fairness Analysis for FairTabGen (Figure 3 and Figure 4)
 
 ## 📋 Overview
 
-This directory contains the implementation and analysis for **Figure 4** of the FairTabGen paper, which presents the data quality and counterfactual fairness analysis. The analysis demonstrates how FairTabGen maintains data quality while improving counterfactual fairness across different datasets.
+This directory contains the implementation and analysis for **Figure 3 and Figure 4** of the FairTabGen paper, which presents the data quality and counterfactual fairness analysis. The analysis demonstrates how FairTabGen maintains data quality while improving counterfactual fairness across different datasets.
 
 ## 🎯 Research Objective
 
@@ -43,19 +43,19 @@ R -e "install.packages(c('faircause', 'dplyr', 'ggplot2'))"
 ### Step 2: Run Criminal Justice Analysis
 ```python
 # Run the COMPAS.ipynb notebook
-# This will generate Figure 4A: Criminal Justice data quality and counterfactual analysis
+# This will generate Figure 3A: Criminal Justice data quality and counterfactual analysis
 ```
 
 ### Step 3: Run Legal Dataset Analysis
 ```python
 # Run the LAW.ipynb notebook
-# This will generate Figure 4B: Legal data quality and counterfactual analysis
+# This will generate Figure 3B: Legal data quality and counterfactual analysis
 ```
 
 ### Step 4: Run MIMIC Dataset Analysis
 ```python
 # Run the MIMIC.ipynb notebook
-# This will generate Figure 4C: MIMIC data quality and counterfactual analysis
+# This will generate Figure 3C: MIMIC data quality and counterfactual analysis
 ```
 
 ### Step 5: Generate Counterfactual Scenarios
@@ -66,27 +66,43 @@ R -e "install.packages(c('faircause', 'dplyr', 'ggplot2'))"
 # 3. Evaluate fairness counterfactuals
 ```
 
-## 📈 Expected Results (Figure 4)
+## 📈 Expected Results (Figure 3 and Figure 4)
 
-### Panel A: Criminal Justice Dataset
+### Figure 3: Data Quality Analysis
+
+**Panel A: Criminal Justice Dataset**
 - **Data Quality Metrics**: Completeness, consistency, accuracy
 - **Counterfactual Analysis**: Individual and group scenarios
 - **Fairness Improvement**: Before vs. after FairTabGen
 - **Key Finding**: High data quality with improved fairness
 
-### Panel B: Legal Dataset
+**Panel B: Legal Dataset**
 - **Data Quality Metrics**: Domain-specific quality measures
 - **Counterfactual Analysis**: Legal domain scenarios
 - **Fairness Improvement**: Bar exam prediction fairness
 - **Key Finding**: Balanced quality and fairness
 
-### Panel C: MIMIC Dataset
+**Panel C: MIMIC Dataset**
 - **Data Quality Metrics**: Healthcare-specific quality measures
 - **Counterfactual Analysis**: Healthcare scenarios
 - **Fairness Improvement**: Healthcare outcome fairness
 - **Key Finding**: Healthcare-specific improvements
 
-### Panel D: Overall Comparison
+### Figure 4: Counterfactual Fairness Analysis
+
+**Panel A: Individual Counterfactuals**
+- **What-if Scenarios**: Individual case analysis
+- **Fairness Impact**: Individual-level fairness improvements
+- **Statistical Significance**: Confidence intervals and p-values
+- **Key Finding**: Clear individual fairness gains
+
+**Panel B: Group Counterfactuals**
+- **Protected Groups**: Group-level counterfactual analysis
+- **Fairness Metrics**: Group-specific fairness measures
+- **Effect Sizes**: Cohen's d and other standardized measures
+- **Key Finding**: Balanced group fairness
+
+**Panel C: Overall Comparison**
 - **Quality vs. Fairness Trade-off**: FairTabGen optimization
 - **Method Comparison**: FairTabGen vs. baselines
 - **Statistical Significance**: Confidence intervals

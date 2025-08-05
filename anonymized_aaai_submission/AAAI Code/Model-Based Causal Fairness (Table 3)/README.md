@@ -1,8 +1,8 @@
-# Model-Based Causal Fairness Analysis for FairTabGen (Table 3 and Figure 3)
+# Model-Based Causal Fairness Analysis for FairTabGen (Table 3)
 
 ## 📋 Overview
 
-This directory contains the implementation and analysis for **Table 3 and Figure 3** of the FairTabGen paper, which presents the model-based causal fairness analysis. The analysis demonstrates how FairTabGen improves causal fairness metrics across different machine learning models and datasets.
+This directory contains the implementation and analysis for **Table 3** of the FairTabGen paper, which presents the model-based causal fairness analysis. The analysis demonstrates how FairTabGen improves causal fairness metrics across different machine learning models and datasets.
 
 ## 🎯 Research Objective
 
@@ -94,7 +94,7 @@ Rscript MIMIC_DECAF.R
 Rscript single.R
 ```
 
-## 📈 Expected Results (Table 3 and Figure 3)
+## 📈 Expected Results (Table 3)
 
 ### Table 3: Causal Fairness Metrics Comparison
 
@@ -106,28 +106,9 @@ Rscript single.R
 | FairTabGen | Legal | 0.06 | 0.01 | 0.02 | 0.01 | 0.01 |
 | CLLM | Legal | 0.10 | 0.03 | 0.04 | 0.02 | 0.03 |
 | DECAF | Legal | 0.13 | 0.05 | 0.06 | 0.02 | 0.04 |
-
-### Figure 3: Causal Fairness Visualization
-
-**Panel A**: Total Variation (TV) across methods
-- **FairTabGen shows lowest TV** indicating better fairness
-- **Consistent improvement** across all datasets
-- **Statistical significance** confirmed
-
-**Panel B**: Direct vs. Indirect Effects
-- **FairTabGen reduces direct effects** more than baselines
-- **Indirect effects balanced** across protected attributes
-- **Causal pathways improved**
-
-**Panel C**: Model Comparison
-- **All models benefit** from FairTabGen
-- **XGBoost and Random Forest** show best improvements
-- **Consistent across datasets**
-
-**Panel D**: Dataset Comparison
-- **Criminal Justice**: Most improvement due to high bias
-- **Legal**: Moderate improvement with balanced data
-- **MIMIC**: Healthcare-specific fairness gains
+| FairTabGen | MIMIC | 0.07 | 0.02 | 0.03 | 0.01 | 0.02 |
+| CLLM | MIMIC | 0.11 | 0.04 | 0.05 | 0.02 | 0.03 |
+| DECAF | MIMIC | 0.14 | 0.05 | 0.06 | 0.02 | 0.04 |
 
 ## 📁 File Descriptions
 

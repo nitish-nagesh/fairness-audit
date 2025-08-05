@@ -25,23 +25,23 @@ This directory contains the complete implementation and experimental results for
 - **Results**: Figure 2 (Data Distribution Analysis)
 - **Files**: Analysis notebook, real and synthetic data files
 
-### 🔬 Model-Based Causal Fairness (Table 3 and Fig 3)
+### 🔬 Model-Based Causal Fairness (Table 3)
 - **Purpose**: Causal fairness analysis across multiple ML models
 - **Content**: Causal fairness metrics (TV, CTFDE, CTFIE, CTFSE, ETT)
-- **Results**: Table 3 (Causal Fairness Metrics) and Figure 3 (Causal Fairness Visualization)
+- **Results**: Table 3 (Causal Fairness Metrics)
 - **Files**: R analysis scripts, prediction files, fairness results
 
-### 📋 Data Quality and Counterfactual Fairness (Fig 4)
+### 📋 Data Quality and Counterfactual Fairness (Fig 3 and 4)
 - **Purpose**: Data quality assessment and counterfactual fairness analysis
 - **Content**: Quality metrics and what-if scenario analysis
-- **Results**: Figure 4 (Data Quality and Counterfactual Fairness)
+- **Results**: Figure 3 (Data Quality Analysis) and Figure 4 (Counterfactual Fairness Analysis)
 - **Files**: Analysis notebooks, quality metrics, counterfactual results
 
-### 📊 Visual Metrics (Fig 5)
-- **Purpose**: Comprehensive visualization and fairness decomposition
-- **Content**: Advanced visualizations and fairness metric breakdowns
-- **Results**: Figure 5 (Visual Metrics and Fairness Decomposition)
-- **Files**: Visualization notebooks, fairness decomposition plots
+### 📊 Bias Mitigation Algorithms (Fig 5)
+- **Purpose**: Comprehensive bias mitigation algorithms and fairness decomposition
+- **Content**: Advanced bias mitigation techniques and fairness metric breakdowns
+- **Results**: Figure 5 (Bias Mitigation Algorithms and Fairness Decomposition)
+- **Files**: Bias mitigation notebooks, fairness decomposition plots
 
 ### 📁 Real Data
 - **Purpose**: Real dataset preprocessing and preparation
@@ -111,20 +111,23 @@ python generate_mimic_decaf_samples.py
 - **Fairness Improvement**: Visible distribution shifts toward fairness
 - **Quality Preservation**: Statistical properties maintained
 
-### Figure 3: Causal Fairness Visualization
-- **Model Comparison**: All models benefit from FairTabGen
-- **Dataset Comparison**: Consistent improvement across domains
-- **Effect Size**: Large effect sizes for all fairness improvements
+### Figure 3: Data Quality Analysis
+- **Quality Metrics**: Completeness, consistency, accuracy assessment
+- **Domain Comparison**: Quality across different datasets
+- **Method Comparison**: FairTabGen vs. baseline quality performance
+- **Statistical Validation**: Quality improvement significance
 
-### Figure 4: Data Quality and Counterfactual Fairness
-- **Quality-Fairness Trade-off**: Optimal balance achieved
-- **Counterfactual Analysis**: What-if scenarios for fairness improvement
-- **Robust Performance**: Across different quality metrics
+### Figure 4: Counterfactual Fairness Analysis
+- **Individual Counterfactuals**: What-if scenarios for individual cases
+- **Group Counterfactuals**: What-if scenarios for protected groups
+- **Fairness Optimization**: Quality vs. fairness trade-off analysis
+- **Robust Performance**: Across different counterfactual scenarios
 
-### Figure 5: Visual Metrics and Fairness Decomposition
-- **Fairness Decomposition**: Clear breakdown of fairness components
-- **Visual Improvements**: Clear visual evidence of fairness gains
-- **Method Comparison**: FairTabGen outperforms all baselines
+### Figure 5: Bias Mitigation Algorithms
+- **Pre-processing Algorithms**: Data-level bias mitigation techniques
+- **In-processing Algorithms**: Model-level bias mitigation approaches
+- **Post-processing Algorithms**: Prediction-level bias mitigation methods
+- **Hybrid Approaches**: Combination of multiple bias mitigation techniques
 
 ## 🔧 Key Features
 
