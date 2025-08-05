@@ -15,13 +15,11 @@ R -e "install.packages(c('faircause', 'dplyr', 'ggplot2'))"
 ### Run Analysis Notebooks
 ```python
 # Run the COMPAS.ipynb notebook
-# This will generate Figure 3A: Criminal Justice data quality and counterfactual analysis
 
 # Run the LAW.ipynb notebook
-# This will generate Figure 3B: Legal data quality and counterfactual analysis
 
 # Run the MIMIC.ipynb notebook
-# This will generate Figure 3C: MIMIC data quality and counterfactual analysis
+
 ```
 
 ## 📁 File Descriptions
