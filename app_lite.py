@@ -13,31 +13,40 @@ import base64
 load_dotenv()
 
 # OpenAI API key setup
-openai.api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+try:
+    openai.api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+except:
+    openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 
 
 def explain_with_agent(text):
     from openai import OpenAI
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-    response = client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are a fairness-aware AI assistant who explains causal bias decomposition."},
-            {"role": "user", "content": f"Here are results from a fairness audit:\n{text}\nExplain them in plain language."}
-        ]
-    )
-    return response.choices[0].message.content
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a fairness-aware AI assistant who explains causal bias decomposition."},
+                {"role": "user", "content": f"Here are results from a fairness audit:\n{text}\nExplain them in plain language."}
+            ]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error generating explanation: {str(e)}"
 
 # --- Self-Critique Function ---
 
 def critique_explanation(explanation_text: str):
     from openai import OpenAI
     import re
-    client = OpenAI(api_key=openai.api_key)
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
 
-    critique_prompt = f"""
+        critique_prompt = f"""
 You are an expert fairness auditor.
 
 Below is a model's fairness explanation:
@@ -57,21 +66,23 @@ For each: Excellent / Good / Poor with 1-2 lines justification.
 Finally, summarize: Overall, this explanation is Excellent / Good / Poor because...
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": "You are a fairness reasoning expert."},
-            {"role": "user", "content": critique_prompt}
-        ]
-    )
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a fairness reasoning expert."},
+                {"role": "user", "content": critique_prompt}
+            ]
+        )
 
-    critique_text = response.choices[0].message.content
+        critique_text = response.choices[0].message.content
 
-    # --- Extract Overall Rating ---
-    match = re.search(r"Overall.*?(Excellent|Good|Poor)", critique_text, re.IGNORECASE)
-    score_label = match.group(1).capitalize() if match else "Unknown"
+        # --- Extract Overall Rating ---
+        match = re.search(r"Overall.*?(Excellent|Good|Poor)", critique_text, re.IGNORECASE)
+        score_label = match.group(1).capitalize() if match else "Unknown"
 
-    return critique_text, score_label  # ✅ Return BOTH
+        return critique_text, score_label  # ✅ Return BOTH
+    except Exception as e:
+        return f"Error generating critique: {str(e)}", "Unknown"
 
 # def critique_explanation(explanation_text: str):
 #     from openai import OpenAI
@@ -169,13 +180,14 @@ if st.button("Run Fairness Audit (Simulated)"):
 
 
 if st.button("Ask Agent to Explain Audit Result", key="explain_audit"):
-    with st.spinner("Calling GPT-4..."):
-        explanation = explain_with_agent(audit_result)
-        st.session_state["current_audit_explanation"] = explanation
-        st.markdown("### Audit Explanation")
-        st.markdown(explanation)
-else:
-    st.warning("⚠️ Please run the fairness audit first.")
+    if "audit_result" in st.session_state:
+        with st.spinner("Calling GPT-4..."):
+            explanation = explain_with_agent(st.session_state["audit_result"])
+            st.session_state["current_audit_explanation"] = explanation
+            st.markdown("### Audit Explanation")
+            st.markdown(explanation)
+    else:
+        st.warning("⚠️ Please run the fairness audit first.")
 
 
 
@@ -184,7 +196,11 @@ st.header("Fairness Prediction")
 
 if st.button("Run Prediction and Show Fairness Plot"):
     st.markdown("### Fairness Decomposition Plot (Random Forest Predictions)")
-    st.image("fig_compas_yhat_rf.png", use_container_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
+    try:
+        st.image("fig_compas_yhat_rf.png", use_container_width=True, caption="COMPAS Fairness Decomposition after Random Forest prediction")
+    except Exception as e:
+        st.error(f"Error loading image: {str(e)}")
+        st.info("Please ensure fig_compas_yhat_rf.png exists in the current directory.")
     
 import base64
 
@@ -220,37 +236,40 @@ Explain it clearly as if teaching someone familiar with fairness concepts but ne
 
 if st.button("Ask GPT-4o to Explain Prediction Plot"):
     with st.spinner("Calling GPT-4o Vision..."):
-        from openai import OpenAI
-        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        try:
+            from openai import OpenAI
+            api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+            client = OpenAI(api_key=api_key)
 
-        # Read image file and encode as base64
-        with open("fig_compas_yhat_rf.png", "rb") as image_file:
-            image_base64 = base64.b64encode(image_file.read()).decode()
+            # Read image file and encode as base64
+            with open("fig_compas_yhat_rf.png", "rb") as image_file:
+                image_base64 = base64.b64encode(image_file.read()).decode()
 
-        # Create the correct format: data URL
-        data_url = f"data:image/png;base64,{image_base64}"
+            # Create the correct format: data URL
+            data_url = f"data:image/png;base64,{image_base64}"
 
-        # Call GPT-4o with proper image_url format
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are a fairness-aware AI assistant who explains fairness decomposition plots for machine learning models."},
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": random_forest_prompt},
-                        {"type": "image_url", "image_url": {"url": data_url}}
-                    ]
-                }
-            ]
-        )
+            # Call GPT-4o with proper image_url format
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a fairness-aware AI assistant who explains fairness decomposition plots for machine learning models."},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": random_forest_prompt},
+                            {"type": "image_url", "image_url": {"url": data_url}}
+                        ]
+                    }
+                ]
+            )
 
-        plot_explanation = response.choices[0].message.content
-        st.session_state["current_prediction_explanation"] = plot_explanation 
-        st.markdown("### GPT-4o Explanation for Prediction Plot")
-        st.markdown(plot_explanation)
-else:
-    st.warning("⚠️ Please run the prediction plot explanation first.")
+            plot_explanation = response.choices[0].message.content
+            st.session_state["current_prediction_explanation"] = plot_explanation 
+            st.markdown("### GPT-4o Explanation for Prediction Plot")
+            st.markdown(plot_explanation)
+        except Exception as e:
+            st.error(f"Error generating plot explanation: {str(e)}")
+            st.info("Please ensure the image file exists and API key is configured.")
 
 # --- COMPAS Outcome Control Results Section ---
 st.markdown("## Fairness Outcome Control")
@@ -306,24 +325,28 @@ if st.session_state["show_compas"]:
     # --- GPT-4o Explanation ---
     st.markdown("### GPT-4o Explanation")
     if st.button("Explain COMPAS Outcome Control", key="explain_compas_oc"):
-        from openai import OpenAI
-        client = OpenAI(api_key=openai.api_key)
-        summary = compas_df.groupby("outcome").apply(lambda g: "\n".join(
-            f"{r['measure']}: {r['value']:.4f} (±{r['sd']:.4f})" for _, r in g.iterrows()
-        )).to_string()
+        try:
+            from openai import OpenAI
+            api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+            client = OpenAI(api_key=api_key)
+            summary = compas_df.groupby("outcome").apply(lambda g: "\n".join(
+                f"{r['measure']}: {r['value']:.4f} (±{r['sd']:.4f})" for _, r in g.iterrows()
+            )).to_string()
 
-        prompt = f"You are a fairness-aware AI assistant. Explain this causal outcome control decomposition across curr, opt, and cf:\n{summary}"
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You explain fairness results to researchers."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        st.markdown("### 🧠 GPT-4o Explanation")
-        outcome_explanation = response.choices[0].message.content
-        st.session_state["current_outcome_control_explanation"] = outcome_explanation
-        st.write(outcome_explanation)
+            prompt = f"You are a fairness-aware AI assistant. Explain this causal outcome control decomposition across curr, opt, and cf:\n{summary}"
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You explain fairness results to researchers."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            st.markdown("### 🧠 GPT-4o Explanation")
+            outcome_explanation = response.choices[0].message.content
+            st.session_state["current_outcome_control_explanation"] = outcome_explanation
+            st.write(outcome_explanation)
+        except Exception as e:
+            st.error(f"Error generating outcome control explanation: {str(e)}")
 
 
 
@@ -334,9 +357,11 @@ st.header("Validation")
 
 def reflect_and_rewrite(explanation_text, critique):
     from openai import OpenAI
-    client = OpenAI(api_key=openai.api_key)
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
 
-    prompt = f"""
+        prompt = f"""
 You are a fairness-aware AI system.
 
 Here is your original explanation:
@@ -357,12 +382,14 @@ Please revise your explanation to:
 Write the revised explanation below:
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}]
-    )
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}]
+        )
 
-    return response.choices[0].message.content
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error generating revised explanation: {str(e)}"
 
 if st.button("Critique Audit Explanation", key="critique_audit"):
     if "current_audit_explanation" in st.session_state:
@@ -530,9 +557,11 @@ st.header("🤖 Automated Fairness Agent Pipeline")
 
 def generate_counter_explanation(original_text):
     from openai import OpenAI
-    client = OpenAI(api_key=openai.api_key)
-    
-    prompt = f"""
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
+        
+        prompt = f"""
 You are a fairness-aware assistant. Here is an explanation about a fairness audit:
 ---
 {original_text}
@@ -542,15 +571,22 @@ Now, generate an alternative explanation that:
 - Prioritizes clarity and logic
 - May disagree with the original explanation if justified
 """
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response.choices[0].message.content.strip()
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error generating counter explanation: {str(e)}"
 
 def full_audit_pipeline(audit_result, max_attempts=5, score_threshold="Good"):
     from openai import OpenAI
-    client = OpenAI(api_key=openai.api_key)
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
+    except Exception as e:
+        st.error(f"Error initializing OpenAI client: {str(e)}")
+        return
 
     # Initialize memory
     if "memory_poor_explanations" not in st.session_state:
