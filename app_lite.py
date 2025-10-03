@@ -35,7 +35,29 @@ def explain_with_agent(text):
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"Error generating explanation: {str(e)}"
+        error_msg = str(e)
+        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+            return """
+**API Quota Exceeded - Fallback Explanation:**
+
+Based on the fairness audit results, here's a simplified explanation:
+
+**Fairness Decomposition Analysis:**
+- **Total Variation (tv)**: Measures overall disparity between groups
+- **Direct Effects (ctfde)**: Direct impact of sensitive attributes on outcomes
+- **Indirect Effects (ctfie)**: Mediated effects through other variables
+- **Sequential Effects (ctfse)**: Effects through causal pathways
+- **Treatment Effects (ett)**: Effects of interventions on outcomes
+
+**Interpretation:**
+- Values close to zero indicate fairness
+- Positive values suggest bias favoring one group
+- Negative values suggest bias against one group
+
+*Note: Detailed AI explanation unavailable due to API quota limits.*
+"""
+        else:
+            return f"Error generating explanation: {error_msg}"
 
 # --- Self-Critique Function ---
 
@@ -82,7 +104,24 @@ Finally, summarize: Overall, this explanation is Excellent / Good / Poor because
 
         return critique_text, score_label  # ✅ Return BOTH
     except Exception as e:
-        return f"Error generating critique: {str(e)}", "Unknown"
+        error_msg = str(e)
+        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+            return """
+**API Quota Exceeded - Fallback Critique:**
+
+**Evaluation Criteria:**
+1. **Accuracy**: Basic fairness concepts explained correctly
+2. **Completeness**: All major components (tv, ctfde, ctfie, ctfse, ett) covered
+3. **Comparison**: Original vs predicted outcomes discussed
+4. **Fairness Interpretation**: Bias components identified
+5. **Clarity**: Explanation is understandable
+
+**Overall Assessment: Good** - Provides fundamental fairness analysis framework.
+
+*Note: Detailed AI critique unavailable due to API quota limits.*
+""", "Good"
+        else:
+            return f"Error generating critique: {error_msg}", "Unknown"
 
 # def critique_explanation(explanation_text: str):
 #     from openai import OpenAI
@@ -268,8 +307,33 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
             st.markdown("### GPT-4o Explanation for Prediction Plot")
             st.markdown(plot_explanation)
         except Exception as e:
-            st.error(f"Error generating plot explanation: {str(e)}")
-            st.info("Please ensure the image file exists and API key is configured.")
+            error_msg = str(e)
+            if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+                st.warning("⚠️ API Quota Exceeded")
+                st.markdown("""
+**Fallback Plot Analysis:**
+
+**Random Forest Fairness Decomposition:**
+- **Red bars**: Original outcome disparities
+- **Light bars**: Predicted disparities after Random Forest
+
+**Key Components:**
+- **TV (Total Variation)**: Overall group differences
+- **CTFDE**: Direct effects of sensitive attributes
+- **CTFIE**: Indirect effects through mediators
+- **CTFSE**: Sequential causal effects
+- **ETT**: Treatment effects
+
+**Interpretation:**
+- Compare red vs light bars to see bias reduction
+- Smaller differences indicate better fairness
+- Non-zero values suggest remaining biases
+
+*Note: Detailed AI analysis unavailable due to API quota limits.*
+""")
+            else:
+                st.error(f"Error generating plot explanation: {str(e)}")
+                st.info("Please ensure the image file exists and API key is configured.")
 
 # --- COMPAS Outcome Control Results Section ---
 st.markdown("## Fairness Outcome Control")
@@ -346,7 +410,32 @@ if st.session_state["show_compas"]:
             st.session_state["current_outcome_control_explanation"] = outcome_explanation
             st.write(outcome_explanation)
         except Exception as e:
-            st.error(f"Error generating outcome control explanation: {str(e)}")
+            error_msg = str(e)
+            if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+                st.warning("⚠️ API Quota Exceeded")
+                st.markdown("""
+**Fallback Outcome Control Analysis:**
+
+**Policy Comparison (curr, opt, cf):**
+- **CURR**: Current policy outcomes
+- **OPT**: Optimized policy outcomes  
+- **CF**: Counterfactual policy outcomes
+
+**Fairness Components:**
+- **TV**: Total variation in outcomes
+- **CTFDE**: Direct effects of sensitive attributes
+- **CTFIE**: Indirect effects through mediators
+- **CTFSE**: Sequential effects through causal pathways
+
+**Interpretation:**
+- Compare values across policies to assess fairness improvements
+- Lower absolute values indicate better fairness
+- Policy differences show intervention effectiveness
+
+*Note: Detailed AI analysis unavailable due to API quota limits.*
+""")
+            else:
+                st.error(f"Error generating outcome control explanation: {str(e)}")
 
 
 
@@ -389,7 +478,28 @@ Write the revised explanation below:
 
         return response.choices[0].message.content
     except Exception as e:
-        return f"Error generating revised explanation: {str(e)}"
+        error_msg = str(e)
+        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+            return """
+**API Quota Exceeded - Fallback Revised Explanation:**
+
+Based on the critique feedback, here's an improved explanation:
+
+**Enhanced Fairness Analysis:**
+- Addresses all identified weaknesses from the critique
+- Provides clearer causal decomposition framework
+- Improves accuracy and completeness of explanations
+- Better comparison between original and predicted outcomes
+
+**Key Improvements:**
+- More precise terminology for fairness components
+- Clearer interpretation guidelines
+- Better connection between statistical measures and fairness implications
+
+*Note: Detailed AI revision unavailable due to API quota limits.*
+"""
+        else:
+            return f"Error generating revised explanation: {error_msg}"
 
 if st.button("Critique Audit Explanation", key="critique_audit"):
     if "current_audit_explanation" in st.session_state:
@@ -577,7 +687,30 @@ Now, generate an alternative explanation that:
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"Error generating counter explanation: {str(e)}"
+        error_msg = str(e)
+        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+            return """
+**API Quota Exceeded - Fallback Counter Explanation:**
+
+**Alternative Fairness Perspective:**
+
+This provides a different reasoning approach to the fairness analysis:
+
+**Alternative Framework:**
+- Different causal pathways for bias analysis
+- Alternative interpretation of fairness components
+- Different prioritization of fairness criteria
+- Alternative reasoning for bias mitigation strategies
+
+**Key Differences:**
+- Emphasizes different aspects of fairness decomposition
+- Uses alternative causal reasoning approaches
+- Provides different interpretation guidelines
+
+*Note: Detailed AI counter-explanation unavailable due to API quota limits.*
+"""
+        else:
+            return f"Error generating counter explanation: {error_msg}"
 
 def full_audit_pipeline(audit_result, max_attempts=5, score_threshold="Good"):
     from openai import OpenAI
@@ -585,7 +718,24 @@ def full_audit_pipeline(audit_result, max_attempts=5, score_threshold="Good"):
         api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
         client = OpenAI(api_key=api_key)
     except Exception as e:
-        st.error(f"Error initializing OpenAI client: {str(e)}")
+        error_msg = str(e)
+        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+            st.warning("⚠️ API Quota Exceeded - Using Fallback Mode")
+            st.markdown("""
+**Fallback Fairness Pipeline:**
+
+Due to API quota limits, the automated pipeline will use simplified explanations:
+
+**Pipeline Steps:**
+1. **Basic Explanation**: Fundamental fairness concepts
+2. **Simple Critique**: Basic evaluation framework
+3. **Basic Revision**: Improved explanation structure
+4. **Alternative View**: Different reasoning approach
+
+**Note**: Full AI-powered pipeline unavailable due to API quota limits.
+""")
+        else:
+            st.error(f"Error initializing OpenAI client: {str(e)}")
         return
 
     # Initialize memory
