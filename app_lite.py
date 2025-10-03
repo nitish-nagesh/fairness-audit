@@ -64,7 +64,17 @@ def is_ollama_available():
 def explain_with_agent(text):
     from openai import OpenAI
     
-    # Try OpenAI first
+    # Try Llama 3.1 first (default)
+    if is_ollama_available():
+        system_prompt = "You are a fairness-aware AI assistant who explains causal bias decomposition in machine learning."
+        user_prompt = f"Here are results from a fairness audit:\n{text}\nExplain them in plain language."
+        llama_response = call_llama(user_prompt, system_prompt)
+        if not llama_response.startswith("Error"):
+            return f"**Llama 3.1 Analysis:**\n\n{llama_response}"
+        else:
+            st.warning("⚠️ Llama 3.1 unavailable, trying OpenAI...")
+    
+    # Fallback to OpenAI if Llama fails
     try:
         api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
         client = OpenAI(api_key=api_key)
@@ -75,20 +85,12 @@ def explain_with_agent(text):
                 {"role": "user", "content": f"Here are results from a fairness audit:\n{text}\nExplain them in plain language."}
             ]
         )
-        return response.choices[0].message.content
+        return f"**OpenAI Analysis:**\n\n{response.choices[0].message.content}\n\n*Note: Using OpenAI as Llama 3.1 was unavailable.*"
     except Exception as e:
         error_msg = str(e)
         
-        # If OpenAI fails due to quota, try Llama as fallback
-        if ("quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower()) and is_ollama_available():
-            st.info("🔄 OpenAI quota exceeded, using Llama 3.1 as fallback...")
-            system_prompt = "You are a fairness-aware AI assistant who explains causal bias decomposition in machine learning."
-            user_prompt = f"Here are results from a fairness audit:\n{text}\nExplain them in plain language."
-            llama_response = call_llama(user_prompt, system_prompt)
-            return f"**Llama 3.1 Analysis:**\n\n{llama_response}\n\n*Note: This explanation was generated using Llama 3.1 due to OpenAI quota limits.*"
-        
         # If both fail, use static fallback
-        elif "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
             return """
 **API Quota Exceeded - Fallback Explanation:**
 
@@ -106,7 +108,7 @@ Based on the fairness audit results, here's a simplified explanation:
 - Positive values suggest bias favoring one group
 - Negative values suggest bias against one group
 
-*Note: Detailed AI explanation unavailable due to API quota limits.*
+*Note: Both Llama 3.1 and OpenAI unavailable due to quota limits.*
 """
         else:
             return f"Error generating explanation: {error_msg}"
@@ -117,12 +119,7 @@ def critique_explanation(explanation_text: str):
     from openai import OpenAI
     import re
     
-    # Try OpenAI first
-    try:
-        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
-        client = OpenAI(api_key=api_key)
-
-        critique_prompt = f"""
+    critique_prompt = f"""
 You are an expert fairness auditor.
 
 Below is a model's fairness explanation:
@@ -141,6 +138,23 @@ For each: Excellent / Good / Poor with 1-2 lines justification.
 
 Finally, summarize: Overall, this explanation is Excellent / Good / Poor because...
 """
+    
+    # Try Llama 3.1 first (default)
+    if is_ollama_available():
+        system_prompt = "You are an expert fairness auditor who evaluates explanations of causal bias decomposition."
+        llama_response = call_llama(critique_prompt, system_prompt)
+        if not llama_response.startswith("Error"):
+            # Try to extract rating from Llama response
+            match = re.search(r"Overall.*?(Excellent|Good|Poor)", llama_response, re.IGNORECASE)
+            score_label = match.group(1).capitalize() if match else "Good"
+            return f"**Llama 3.1 Critique:**\n\n{llama_response}", score_label
+        else:
+            st.warning("⚠️ Llama 3.1 unavailable for critique, trying OpenAI...")
+    
+    # Fallback to OpenAI if Llama fails
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
 
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -156,24 +170,12 @@ Finally, summarize: Overall, this explanation is Excellent / Good / Poor because
         match = re.search(r"Overall.*?(Excellent|Good|Poor)", critique_text, re.IGNORECASE)
         score_label = match.group(1).capitalize() if match else "Unknown"
 
-        return critique_text, score_label  # ✅ Return BOTH
+        return f"**OpenAI Critique:**\n\n{critique_text}\n\n*Note: Using OpenAI as Llama 3.1 was unavailable.*", score_label
     except Exception as e:
         error_msg = str(e)
         
-        # If OpenAI fails due to quota, try Llama as fallback
-        if ("quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower()) and is_ollama_available():
-            st.info("🔄 OpenAI quota exceeded, using Llama 3.1 for critique...")
-            system_prompt = "You are an expert fairness auditor who evaluates explanations of causal bias decomposition."
-            llama_response = call_llama(critique_prompt, system_prompt)
-            
-            # Try to extract rating from Llama response
-            match = re.search(r"Overall.*?(Excellent|Good|Poor)", llama_response, re.IGNORECASE)
-            score_label = match.group(1).capitalize() if match else "Good"
-            
-            return f"**Llama 3.1 Critique:**\n\n{llama_response}\n\n*Note: This critique was generated using Llama 3.1 due to OpenAI quota limits.*", score_label
-        
         # If both fail, use static fallback
-        elif "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
             return """
 **API Quota Exceeded - Fallback Critique:**
 
@@ -186,7 +188,7 @@ Finally, summarize: Overall, this explanation is Excellent / Good / Poor because
 
 **Overall Assessment: Good** - Provides fundamental fairness analysis framework.
 
-*Note: Detailed AI critique unavailable due to API quota limits.*
+*Note: Both Llama 3.1 and OpenAI unavailable due to quota limits.*
 """, "Good"
         else:
             return f"Error generating critique: {error_msg}", "Unknown"
@@ -397,7 +399,7 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
 - Smaller differences indicate better fairness
 - Non-zero values suggest remaining biases
 
-*Note: Detailed AI analysis unavailable due to API quota limits.*
+*Note: Both Llama 3.1 and OpenAI unavailable due to quota limits.*
 """)
             else:
                 st.error(f"Error generating plot explanation: {str(e)}")
@@ -500,7 +502,7 @@ if st.session_state["show_compas"]:
 - Lower absolute values indicate better fairness
 - Policy differences show intervention effectiveness
 
-*Note: Detailed AI analysis unavailable due to API quota limits.*
+*Note: Both Llama 3.1 and OpenAI unavailable due to quota limits.*
 """)
             else:
                 st.error(f"Error generating outcome control explanation: {str(e)}")
@@ -514,11 +516,8 @@ st.header("Validation")
 
 def reflect_and_rewrite(explanation_text, critique):
     from openai import OpenAI
-    try:
-        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
-        client = OpenAI(api_key=api_key)
-
-        prompt = f"""
+    
+    prompt = f"""
 You are a fairness-aware AI system.
 
 Here is your original explanation:
@@ -538,13 +537,27 @@ Please revise your explanation to:
 
 Write the revised explanation below:
 """
+    
+    # Try Llama 3.1 first (default)
+    if is_ollama_available():
+        system_prompt = "You are a fairness-aware AI system that revises explanations based on critiques."
+        llama_response = call_llama(prompt, system_prompt)
+        if not llama_response.startswith("Error"):
+            return f"**Llama 3.1 Revised Explanation:**\n\n{llama_response}"
+        else:
+            st.warning("⚠️ Llama 3.1 unavailable for revision, trying OpenAI...")
+    
+    # Fallback to OpenAI if Llama fails
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
 
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}]
         )
 
-        return response.choices[0].message.content
+        return f"**OpenAI Revised Explanation:**\n\n{response.choices[0].message.content}\n\n*Note: Using OpenAI as Llama 3.1 was unavailable.*"
     except Exception as e:
         error_msg = str(e)
         if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
@@ -564,7 +577,7 @@ Based on the critique feedback, here's an improved explanation:
 - Clearer interpretation guidelines
 - Better connection between statistical measures and fairness implications
 
-*Note: Detailed AI revision unavailable due to API quota limits.*
+*Note: Both Llama 3.1 and OpenAI unavailable due to API quota limits.*
 """
         else:
             return f"Error generating revised explanation: {error_msg}"
@@ -735,11 +748,8 @@ st.header("🤖 Automated Fairness Agent Pipeline")
 
 def generate_counter_explanation(original_text):
     from openai import OpenAI
-    try:
-        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
-        client = OpenAI(api_key=api_key)
-        
-        prompt = f"""
+    
+    prompt = f"""
 You are a fairness-aware assistant. Here is an explanation about a fairness audit:
 ---
 {original_text}
@@ -749,11 +759,26 @@ Now, generate an alternative explanation that:
 - Prioritizes clarity and logic
 - May disagree with the original explanation if justified
 """
+    
+    # Try Llama 3.1 first (default)
+    if is_ollama_available():
+        system_prompt = "You are a fairness-aware assistant who generates alternative explanations for fairness audits."
+        llama_response = call_llama(prompt, system_prompt)
+        if not llama_response.startswith("Error"):
+            return f"**Llama 3.1 Counter Explanation:**\n\n{llama_response.strip()}"
+        else:
+            st.warning("⚠️ Llama 3.1 unavailable for counter explanation, trying OpenAI...")
+    
+    # Fallback to OpenAI if Llama fails
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
+        
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}]
         )
-        return response.choices[0].message.content.strip()
+        return f"**OpenAI Counter Explanation:**\n\n{response.choices[0].message.content.strip()}\n\n*Note: Using OpenAI as Llama 3.1 was unavailable.*"
     except Exception as e:
         error_msg = str(e)
         if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
@@ -775,24 +800,30 @@ This provides a different reasoning approach to the fairness analysis:
 - Uses alternative causal reasoning approaches
 - Provides different interpretation guidelines
 
-*Note: Detailed AI counter-explanation unavailable due to API quota limits.*
+*Note: Both Llama 3.1 and OpenAI unavailable due to API quota limits.*
 """
         else:
             return f"Error generating counter explanation: {error_msg}"
 
 def full_audit_pipeline(audit_result, max_attempts=5, score_threshold="Good"):
     from openai import OpenAI
-    try:
-        api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
-        client = OpenAI(api_key=api_key)
-    except Exception as e:
-        error_msg = str(e)
-        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
-            st.warning("⚠️ API Quota Exceeded - Using Fallback Mode")
-            st.markdown("""
+    
+    # Check if Llama 3.1 is available (preferred)
+    if not is_ollama_available():
+        st.warning("⚠️ Llama 3.1 not available, checking OpenAI...")
+        
+        # Try OpenAI as fallback
+        try:
+            api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+            client = OpenAI(api_key=api_key)
+        except Exception as e:
+            error_msg = str(e)
+            if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+                st.warning("⚠️ Both Llama 3.1 and OpenAI unavailable - Using Fallback Mode")
+                st.markdown("""
 **Fallback Fairness Pipeline:**
 
-Due to API quota limits, the automated pipeline will use simplified explanations:
+Due to API quota limits and Ollama unavailability, the automated pipeline will use simplified explanations:
 
 **Pipeline Steps:**
 1. **Basic Explanation**: Fundamental fairness concepts
@@ -800,11 +831,13 @@ Due to API quota limits, the automated pipeline will use simplified explanations
 3. **Basic Revision**: Improved explanation structure
 4. **Alternative View**: Different reasoning approach
 
-**Note**: Full AI-powered pipeline unavailable due to API quota limits.
+**Note**: Full AI-powered pipeline unavailable due to both Llama 3.1 and OpenAI limitations.
 """)
-        else:
-            st.error(f"Error initializing OpenAI client: {str(e)}")
-        return
+            else:
+                st.error(f"Error initializing AI clients: {str(e)}")
+            return
+    else:
+        st.info("🦙 Using Llama 3.1 for automated pipeline...")
 
     # Initialize memory
     if "memory_poor_explanations" not in st.session_state:
