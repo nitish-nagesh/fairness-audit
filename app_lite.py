@@ -230,6 +230,12 @@ Finally, summarize: Overall, this explanation is Excellent / Good / Poor because
 # --- UI ---
 st.title("Causal Fairness Audit")
 
+# AI Model Status
+if is_ollama_available():
+    st.success("🦙 **Llama 3.1** is available and will be used as the primary AI model")
+else:
+    st.warning("⚠️ **Llama 3.1** not available - will fallback to OpenAI (if quota allows) or static explanations")
+
 # (Optional) Upload .rda file (even if not used in this version)
 uploaded_file = st.file_uploader("Upload the raw dataset for generating and evaluating synthetic data", type="rda")
 
@@ -343,44 +349,58 @@ Explain it clearly as if teaching someone familiar with fairness concepts but ne
 
 
 
-if st.button("Ask GPT-4o to Explain Prediction Plot"):
-    with st.spinner("Calling GPT-4o Vision..."):
-        try:
-            from openai import OpenAI
-            api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
-            client = OpenAI(api_key=api_key)
+if st.button("Ask AI to Explain Prediction Plot"):
+    with st.spinner("Analyzing prediction plot..."):
+        # Try Llama 3.1 first (default)
+        if is_ollama_available():
+            system_prompt = "You are a fairness-aware AI assistant who explains fairness decomposition plots for machine learning models."
+            llama_response = call_llama(random_forest_prompt, system_prompt)
+            if not llama_response.startswith("Error"):
+                plot_explanation = llama_response
+                st.session_state["current_prediction_explanation"] = plot_explanation 
+                st.markdown("### 🦙 Llama 3.1 Explanation for Prediction Plot")
+                st.markdown(plot_explanation)
+            else:
+                st.warning("⚠️ Llama 3.1 unavailable, trying OpenAI...")
+        
+        # Fallback to OpenAI if Llama fails
+        if not is_ollama_available() or llama_response.startswith("Error"):
+            try:
+                from openai import OpenAI
+                api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+                client = OpenAI(api_key=api_key)
 
-            # Read image file and encode as base64
-            with open("fig_compas_yhat_rf.png", "rb") as image_file:
-                image_base64 = base64.b64encode(image_file.read()).decode()
+                # Read image file and encode as base64
+                with open("fig_compas_yhat_rf.png", "rb") as image_file:
+                    image_base64 = base64.b64encode(image_file.read()).decode()
 
-            # Create the correct format: data URL
-            data_url = f"data:image/png;base64,{image_base64}"
+                # Create the correct format: data URL
+                data_url = f"data:image/png;base64,{image_base64}"
 
-            # Call GPT-4o with proper image_url format
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You are a fairness-aware AI assistant who explains fairness decomposition plots for machine learning models."},
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": random_forest_prompt},
-                            {"type": "image_url", "image_url": {"url": data_url}}
-                        ]
-                    }
-                ]
-            )
+                # Call GPT-4o with proper image_url format
+                response = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": "You are a fairness-aware AI assistant who explains fairness decomposition plots for machine learning models."},
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": random_forest_prompt},
+                                {"type": "image_url", "image_url": {"url": data_url}}
+                            ]
+                        }
+                    ]
+                )
 
-            plot_explanation = response.choices[0].message.content
-            st.session_state["current_prediction_explanation"] = plot_explanation 
-            st.markdown("### GPT-4o Explanation for Prediction Plot")
-            st.markdown(plot_explanation)
-        except Exception as e:
-            error_msg = str(e)
-            if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
-                st.warning("⚠️ API Quota Exceeded")
-                st.markdown("""
+                plot_explanation = response.choices[0].message.content
+                st.session_state["current_prediction_explanation"] = plot_explanation 
+                st.markdown("### 🤖 OpenAI Explanation for Prediction Plot")
+                st.markdown(plot_explanation)
+            except Exception as e:
+                error_msg = str(e)
+                if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+                    st.warning("⚠️ API Quota Exceeded")
+                    st.markdown("""
 **Fallback Plot Analysis:**
 
 **Random Forest Fairness Decomposition:**
@@ -401,9 +421,9 @@ if st.button("Ask GPT-4o to Explain Prediction Plot"):
 
 *Note: Both Llama 3.1 and OpenAI unavailable due to quota limits.*
 """)
-            else:
-                st.error(f"Error generating plot explanation: {str(e)}")
-                st.info("Please ensure the image file exists and API key is configured.")
+                else:
+                    st.error(f"Error generating plot explanation: {str(e)}")
+                    st.info("Please ensure the image file exists and API key is configured.")
 
 # --- COMPAS Outcome Control Results Section ---
 st.markdown("## Fairness Outcome Control")
@@ -459,31 +479,47 @@ if st.session_state["show_compas"]:
     # --- GPT-4o Explanation ---
     st.markdown("### GPT-4o Explanation")
     if st.button("Explain COMPAS Outcome Control", key="explain_compas_oc"):
-        try:
-            from openai import OpenAI
-            api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
-            client = OpenAI(api_key=api_key)
-            summary = compas_df.groupby("outcome").apply(lambda g: "\n".join(
-                f"{r['measure']}: {r['value']:.4f} (±{r['sd']:.4f})" for _, r in g.iterrows()
-            )).to_string()
+        summary = compas_df.groupby("outcome").apply(lambda g: "\n".join(
+            f"{r['measure']}: {r['value']:.4f} (±{r['sd']:.4f})" for _, r in g.iterrows()
+        )).to_string()
 
-            prompt = f"You are a fairness-aware AI assistant. Explain this causal outcome control decomposition across curr, opt, and cf:\n{summary}"
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You explain fairness results to researchers."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            st.markdown("### 🧠 GPT-4o Explanation")
-            outcome_explanation = response.choices[0].message.content
-            st.session_state["current_outcome_control_explanation"] = outcome_explanation
-            st.write(outcome_explanation)
-        except Exception as e:
-            error_msg = str(e)
-            if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
-                st.warning("⚠️ API Quota Exceeded")
-                st.markdown("""
+        prompt = f"You are a fairness-aware AI assistant. Explain this causal outcome control decomposition across curr, opt, and cf:\n{summary}"
+        
+        # Try Llama 3.1 first (default)
+        if is_ollama_available():
+            system_prompt = "You explain fairness results to researchers."
+            llama_response = call_llama(prompt, system_prompt)
+            if not llama_response.startswith("Error"):
+                outcome_explanation = llama_response
+                st.session_state["current_outcome_control_explanation"] = outcome_explanation
+                st.markdown("### 🦙 Llama 3.1 Explanation")
+                st.write(outcome_explanation)
+            else:
+                st.warning("⚠️ Llama 3.1 unavailable, trying OpenAI...")
+        
+        # Fallback to OpenAI if Llama fails
+        if not is_ollama_available() or llama_response.startswith("Error"):
+            try:
+                from openai import OpenAI
+                api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+                client = OpenAI(api_key=api_key)
+                
+                response = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": "You explain fairness results to researchers."},
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                st.markdown("### 🤖 OpenAI Explanation")
+                outcome_explanation = response.choices[0].message.content
+                st.session_state["current_outcome_control_explanation"] = outcome_explanation
+                st.write(outcome_explanation)
+            except Exception as e:
+                error_msg = str(e)
+                if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+                    st.warning("⚠️ API Quota Exceeded")
+                    st.markdown("""
 **Fallback Outcome Control Analysis:**
 
 **Policy Comparison (curr, opt, cf):**
@@ -504,8 +540,8 @@ if st.session_state["show_compas"]:
 
 *Note: Both Llama 3.1 and OpenAI unavailable due to quota limits.*
 """)
-            else:
-                st.error(f"Error generating outcome control explanation: {str(e)}")
+                else:
+                    st.error(f"Error generating outcome control explanation: {str(e)}")
 
 
 
