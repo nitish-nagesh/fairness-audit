@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import re
 import base64
+import requests
+import json
 
 # Load environment variables (in local testing)
 load_dotenv()
@@ -18,11 +20,51 @@ try:
 except:
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# Ollama/Llama configuration
+OLLAMA_BASE_URL = "http://localhost:11434"
+LLAMA_MODEL = "llama3.1:8b"  # or "llama3.1:70b" for larger model
+
+def call_llama(prompt, system_prompt="You are a helpful AI assistant."):
+    """Call Llama 3.1 via Ollama API"""
+    try:
+        url = f"{OLLAMA_BASE_URL}/api/generate"
+        payload = {
+            "model": LLAMA_MODEL,
+            "prompt": f"{system_prompt}\n\n{prompt}",
+            "stream": False,
+            "options": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "max_tokens": 1000
+            }
+        }
+        
+        response = requests.post(url, json=payload, timeout=30)
+        response.raise_for_status()
+        
+        result = response.json()
+        return result.get("response", "No response generated")
+        
+    except requests.exceptions.RequestException as e:
+        return f"Error calling Llama: {str(e)}"
+    except Exception as e:
+        return f"Error processing Llama response: {str(e)}"
+
+def is_ollama_available():
+    """Check if Ollama is running and accessible"""
+    try:
+        response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
+        return response.status_code == 200
+    except:
+        return False
+
 
 
 
 def explain_with_agent(text):
     from openai import OpenAI
+    
+    # Try OpenAI first
     try:
         api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
         client = OpenAI(api_key=api_key)
@@ -36,7 +78,17 @@ def explain_with_agent(text):
         return response.choices[0].message.content
     except Exception as e:
         error_msg = str(e)
-        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+        
+        # If OpenAI fails due to quota, try Llama as fallback
+        if ("quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower()) and is_ollama_available():
+            st.info("🔄 OpenAI quota exceeded, using Llama 3.1 as fallback...")
+            system_prompt = "You are a fairness-aware AI assistant who explains causal bias decomposition in machine learning."
+            user_prompt = f"Here are results from a fairness audit:\n{text}\nExplain them in plain language."
+            llama_response = call_llama(user_prompt, system_prompt)
+            return f"**Llama 3.1 Analysis:**\n\n{llama_response}\n\n*Note: This explanation was generated using Llama 3.1 due to OpenAI quota limits.*"
+        
+        # If both fail, use static fallback
+        elif "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
             return """
 **API Quota Exceeded - Fallback Explanation:**
 
@@ -64,6 +116,8 @@ Based on the fairness audit results, here's a simplified explanation:
 def critique_explanation(explanation_text: str):
     from openai import OpenAI
     import re
+    
+    # Try OpenAI first
     try:
         api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
         client = OpenAI(api_key=api_key)
@@ -105,7 +159,21 @@ Finally, summarize: Overall, this explanation is Excellent / Good / Poor because
         return critique_text, score_label  # ✅ Return BOTH
     except Exception as e:
         error_msg = str(e)
-        if "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
+        
+        # If OpenAI fails due to quota, try Llama as fallback
+        if ("quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower()) and is_ollama_available():
+            st.info("🔄 OpenAI quota exceeded, using Llama 3.1 for critique...")
+            system_prompt = "You are an expert fairness auditor who evaluates explanations of causal bias decomposition."
+            llama_response = call_llama(critique_prompt, system_prompt)
+            
+            # Try to extract rating from Llama response
+            match = re.search(r"Overall.*?(Excellent|Good|Poor)", llama_response, re.IGNORECASE)
+            score_label = match.group(1).capitalize() if match else "Good"
+            
+            return f"**Llama 3.1 Critique:**\n\n{llama_response}\n\n*Note: This critique was generated using Llama 3.1 due to OpenAI quota limits.*", score_label
+        
+        # If both fail, use static fallback
+        elif "quota" in error_msg.lower() or "insufficient_quota" in error_msg.lower():
             return """
 **API Quota Exceeded - Fallback Critique:**
 

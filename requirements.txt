@@ -3,3 +3,4 @@ pyreadr
 openai
 python-dotenv
 matplotlib
+requests
